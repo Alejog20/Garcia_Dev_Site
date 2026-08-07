@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+  html, body { margin: 0; padding: 0; background: #050506; }
+  @media (max-width: 720px) {
+    [data-hero-nav] { gap: 14px !important; font-size: 10px !important; letter-spacing: .1em !important }
+    [data-hero-head] { flex-wrap: wrap !important; row-gap: 10px !important }
+    [data-hero-hint] { display: none }
+    p, [data-just] { text-align: left !important; hyphens: manual !important }
+    [data-hero-h1] { min-height: 3.4em !important }
+    [data-shot-nav] button { width: 34px !important; height: 34px !important }
+    [data-proj-nav] button { width: 46px !important; height: 46px !important }
+  }
+  @media (max-width: 460px) {
+    [data-hero-h1] { min-height: 4.6em !important }
+  }
+  [data-wrap] { max-width: 1240px }
+  @media (min-width: 1800px) {
+    [data-wrap] { max-width: 1560px }
+    [data-hero-inner] { max-width: 1560px; margin: 0 auto; width: 100% }
+  }
+  @media (min-width: 2600px) {
+    [data-wrap] { max-width: 1800px }
+    [data-hero-inner] { max-width: 1800px }
+  }
+  * { box-sizing: border-box; }
+  a { color: #F2EFEA; text-decoration: none; }
+  a:hover { color: #FF7A33; }
+  ::selection { background: #FF6A1F; color: #08070A; }
+  @keyframes omDrift { 0%,100% { transform: translateY(0); opacity: .55 } 50% { transform: translateY(9px); opacity: 1 } }
+  @keyframes omPulse { 0%,100% { opacity: .35 } 50% { opacity: .9 } }
+  @keyframes omCaret { 0%,45% { opacity: 1 } 55%,100% { opacity: 0 } }
+  @keyframes omFloat { 0%,100% { transform: translate3d(0,0,0) } 50% { transform: translate3d(0,-22px,0) } }
+  @keyframes omFloatB { 0%,100% { transform: translate3d(0,0,0) } 50% { transform: translate3d(-14px,16px,0) } }
+  @keyframes omTurn { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+  @keyframes omWobble { 0%,100% { transform: rotate(-1.1deg) } 25% { transform: rotate(.2deg) } 50% { transform: rotate(1.3deg) } 75% { transform: rotate(.1deg) } }
+  @keyframes omOrbit {
+    0%   { transform: translate3d(0,0,0) }
+    25%  { transform: translate3d(28px,-34px,0) }
+    50%  { transform: translate3d(52px,4px,0) }
+    75%  { transform: translate3d(22px,38px,0) }
+    100% { transform: translate3d(0,0,0) }
+  }
+  @keyframes omTurnBack { from { transform: rotate(360deg) } to { transform: rotate(0deg) } }
+  @keyframes omHue { 0%,100% { filter: hue-rotate(0deg) saturate(1.08) } 34% { filter: hue-rotate(-5deg) saturate(1.16) } 68% { filter: hue-rotate(4deg) saturate(1.04) } }
+  @keyframes omAurora { 0%,100% { opacity: .34; transform: scale(1) } 28% { opacity: .95; transform: scale(1.05) } 55% { opacity: .48; transform: scale(.98) } 78% { opacity: .82; transform: scale(1.03) } }
+  @keyframes omSurface { from { background-position: 0% 0%, 0% 0%, 0% 0% } to { background-position: -200% 0%, -300% 0%, -140% 0% } }
+  input::placeholder, textarea::placeholder { color: #5F5A55; opacity: 1 }
+  [data-carousel]::-webkit-scrollbar { display: none }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;overflow:clip;background:#050506;color:#F2EFEA;font-family:'Space Grotesk',Helvetica,sans-serif;-webkit-font-smoothing:antialiased">
+
+  <canvas ref="{{ starRef }}" style="position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:0"></canvas>
+
+  <section data-screen-label="Hero — black hole" style="position:relative;z-index:2;height:100svh;min-height:min(600px,124vw);width:100%;overflow:hidden;background:#030304">
+
+    <canvas ref="{{ canvasRef }}" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>
+
+    <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 85% at 50% 45%, rgba(0,0,0,0) 40%, rgba(3,3,4,.55) 78%, rgba(3,3,4,.92) 100%)"></div>
+    <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top, rgba(3,3,4,.88) 0%, rgba(3,3,4,.25) 34%, rgba(3,3,4,0) 62%)"></div>
+
+    <div ref="{{ overlayRef }}" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(20px,3.2vw,44px);pointer-events:none;will-change:opacity,transform">
+
+      <header data-hero-inner="true" data-hero-head="true" style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;pointer-events:auto">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:9px;height:9px;border-radius:50%;background:#FF6A1F;box-shadow:0 0 14px 2px rgba(255,106,31,.75);animation:omPulse 3.4s ease-in-out infinite"></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#CFC9C0">Alejandro García</span>
+        </div>
+        <nav data-hero-nav="true" style="display:flex;gap:clamp(14px,2vw,30px);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8E8880">
+          <a href="#sobre-mi">About</a>
+          <a href="#proyectos">Projects</a>
+          <a href="#habilidades">Skills</a>
+          <a href="#contacto">Contact</a>
+        </nav>
+      </header>
+
+      <div data-hero-inner="true" style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap">
+        <div style="max-width:min(760px,86vw);pointer-events:auto">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+            <div style="width:clamp(28px,4vw,60px);height:1px;background:#FF6A1F"></div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#FF8C4A">Python Developer · Automation · Data</span>
+          </div>
+          <h1 data-hero-h1="true" style="margin:0;font-size:clamp(38px,6.4vw,104px);line-height:.98;font-weight:500;letter-spacing:-.035em;min-height:1.9em;text-wrap:balance">{{ typed }}<span style="display:inline-block;width:.06em;height:.82em;margin-left:.06em;background:#FF6A1F;vertical-align:-.04em;animation:omCaret 1.05s steps(1) infinite"></span></h1>
+          <p style="margin:26px 0 0;max-width:52ch;font-size:clamp(15px,1.25vw,19px);line-height:1.55;color:#A8A29A;text-align:justify;hyphens:auto;text-wrap:pretty">I turn ideas into systems with real gravitational pull — automating processes, analyzing data, and cutting operational cost for the teams I build with.</p>
+          <div style="display:flex;gap:14px;margin-top:38px;flex-wrap:wrap">
+            <a href="#proyectos" style="display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:2px;background:#F2EFEA;color:#08070A;font-size:14px;font-weight:600;letter-spacing:.02em" style-hover="background:#FF6A1F;color:#08070A">View Projects</a>
+            <a href="#contacto" style="display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:2px;border:1px solid rgba(242,239,234,.28);color:#F2EFEA;font-size:14px;font-weight:500;letter-spacing:.02em" style-hover="border-color:#FF6A1F;color:#FF9257">Contact</a>
+          </div>
+        </div>
+
+        <div data-hero-hint="true" style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6E6862;text-align:right">
+          <span>Drag to orbit · Scroll to fall in</span>
+          <div style="width:1px;height:46px;background:linear-gradient(to bottom,rgba(255,106,31,.85),rgba(255,106,31,0));animation:omDrift 2.6s ease-in-out infinite"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sobre-mi" data-screen-label="About" style="position:relative;padding:clamp(46px,6vh,78px) clamp(20px,3.2vw,44px);border-top:1px solid rgba(242,239,234,.08);background:transparent;z-index:1">
+    <div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0"><div style="position:absolute;right:2%;top:6%;width:clamp(220px,26vw,380px);height:clamp(220px,26vw,380px);opacity:.30;animation:omFloat 62s ease-in-out infinite;background:radial-gradient(ellipse 42% 34% at 54% 42%, rgba(255,168,110,.12), transparent 72%),radial-gradient(ellipse 30% 40% at 40% 62%, rgba(132,126,204,.09), transparent 74%);filter:blur(30px)"></div></div>
+      <div data-wrap="true" style="position:relative;z-index:1;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:clamp(22px,2.6vh,34px)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;color:#FF8C4A">01</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6E6862">About</span>
+        <div style="flex:1;height:1px;background:rgba(242,239,234,.10)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(28px,4vw,64px);align-items:start">
+        <div>
+          <h2 style="margin:0 0 28px;font-weight:500"><span style="background:#F2EFEA;color:#08070A;font-size:clamp(28px,3.4vw,46px);line-height:1.42;letter-spacing:-.025em;padding:.06em .26em;box-decoration-break:clone;-webkit-box-decoration-break:clone;text-wrap:balance">I build the quiet machinery that makes a company faster</span></h2>
+          <div style="width:100%;aspect-ratio:4/5;max-width:360px;background:transparent">
+            <img src="https://www.garcia-dev.co/assets/img-sm.png" alt="Alejandro García" style="width:100%;height:100%;object-fit:contain;display:block;background:transparent" />
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <p style="margin:0;font-size:clamp(16px,1.2vw,18px);line-height:1.7;color:#A8A29A;text-align:justify;hyphens:auto;text-wrap:pretty">I'm Alejandro, a full-stack developer in Bogotá. Most of my work is automation and data: scripts that do in seconds what used to take an afternoon, and dashboards that answer a question before anyone has to ask it.</p>
+          <p style="margin:0;font-size:clamp(16px,1.2vw,18px);line-height:1.7;color:#A8A29A;text-align:justify;hyphens:auto;text-wrap:pretty">I studied International Business before I learned to code, which turned out to be useful — I can sit in a finance review and a code review on the same day and translate between them. With Python, Java and Power BI I've rebuilt real financial workflows, and the part I care about is simple: fewer manual hours, cleaner numbers, calmer teams.</p>
+          <p style="margin:0;font-size:clamp(16px,1.2vw,18px);line-height:1.7;color:#A8A29A;text-align:justify;hyphens:auto;text-wrap:pretty">Away from the keyboard it's cinema, photography and music — mostly loud.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:24px;margin-top:14px;padding-top:32px;border-top:1px solid rgba(242,239,234,.12)" ref="{{ statsRef }}">
+            <div>
+              <div style="font-size:clamp(28px,3vw,40px);line-height:1;font-weight:500;letter-spacing:-.03em;color:#F2EFEA;font-variant-numeric:tabular-nums">{{ m1 }}</div>
+              <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#6E6862">Less reporting time</div>
+            </div>
+            <div>
+              <div style="font-size:clamp(28px,3vw,40px);line-height:1;font-weight:500;letter-spacing:-.03em;color:#F2EFEA;font-variant-numeric:tabular-nums">{{ m2 }}</div>
+              <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#6E6862">Saved every month</div>
+            </div>
+            <div>
+              <div style="font-size:clamp(28px,3vw,40px);line-height:1;font-weight:500;letter-spacing:-.03em;color:#F2EFEA;font-variant-numeric:tabular-nums">{{ m3 }}</div>
+              <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#6E6862">Projects led</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="proyectos" data-screen-label="Projects" style="position:relative;padding:clamp(46px,6vh,78px) clamp(20px,3.2vw,44px);border-top:1px solid rgba(242,239,234,.08);background:transparent;z-index:1">
+    <div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0"><div style="position:absolute;left:-6%;top:8%;width:clamp(240px,30vw,420px);height:clamp(240px,30vw,420px);opacity:.42;animation:omFloatB 58s ease-in-out infinite;background:radial-gradient(ellipse 46% 30% at 42% 40%, rgba(255,176,116,.13), transparent 70%),radial-gradient(ellipse 30% 42% at 58% 60%, rgba(140,132,210,.10), transparent 72%);filter:blur(26px)"></div>
+      <div style="position:absolute;left:6%;top:22%;width:3px;height:3px;border-radius:50%;background:#FFF3E2;box-shadow:0 0 14px 4px rgba(255,226,190,.55)"></div>
+      <div style="position:absolute;left:13%;top:34%;width:2px;height:2px;border-radius:50%;background:#DCE8FF;box-shadow:0 0 10px 3px rgba(200,220,255,.45)"></div></div>
+      <div data-wrap="true" style="position:relative;z-index:1;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:clamp(22px,2.6vh,34px)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;color:#FF8C4A">02</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6E6862">Selected work</span>
+        <div style="flex:1;height:1px;background:rgba(242,239,234,.10)"></div>
+        <div data-proj-nav="true" style="display:flex;align-items:center;gap:14px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:#A8A29A;min-width:58px;text-align:right">{{ projLabel }}</span>
+          <button type="button" onClick="{{ prevProj }}" aria-label="Previous project" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(242,239,234,.22);color:#F2EFEA;font-size:15px;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
+          <button type="button" onClick="{{ nextProj }}" aria-label="Next project" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(242,239,234,.22);color:#F2EFEA;font-size:15px;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
+        </div>
+      </div>
+
+      <div ref="{{ projRef }}" data-carousel="projects" style="display:flex;gap:clamp(28px,4vw,56px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding-bottom:6px">
+
+        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
+          <div style="position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
+            <div data-gal="0" style="position:absolute;inset:0">
+            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
+              <image-slot id="amazon-1" shape="rect" placeholder="Terminal output of the scraper"></image-slot>
+            </div>
+            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="amazon-2" shape="rect" placeholder="A run in progress"></image-slot>
+            </div>
+            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="amazon-3" shape="rect" placeholder="The cleaned dataset"></image-slot>
+            </div>
+            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
+              <span data-count="0" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
+              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="0" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
+              <button type="button" onClick="{{ shotNext }}" data-gal-next="0" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
+            </div>
+          </div>
+          </div>
+          <div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">01</span>
+            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em">Amazon Scraper</h3>
+            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">Pulls prices, titles and product metrics from Amazon — and keeps working when the site pushes back. Session rotation, retries and careful error handling so the data lands clean on every run.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Requests</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">BeautifulSoup4</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Selenium</span>
+            </div>
+            <a href="https://github.com/Alejog20/Ethical_amazon_scraper" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
+          </div>
+        </article>
+
+        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
+          <div style="order:2;position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
+            <div data-gal="1" style="position:absolute;inset:0">
+            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
+              <image-slot id="invoice-1" shape="rect" placeholder="A generated PDF invoice"></image-slot>
+            </div>
+            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="invoice-2" shape="rect" placeholder="The source spreadsheet"></image-slot>
+            </div>
+            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="invoice-3" shape="rect" placeholder="The command running"></image-slot>
+            </div>
+            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
+              <span data-count="1" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
+              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="1" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
+              <button type="button" onClick="{{ shotNext }}" data-gal-next="1" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
+            </div>
+          </div>
+          </div>
+          <div style="order:1">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">02</span>
+            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em;text-align:right">Invoice Generator</h3>
+            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">One command turns a spreadsheet into individual PDF invoices. A row per client goes in, a formatted invoice with charges and totals comes out — an afternoon of manual billing becomes a few seconds.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Openpyxl</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">PDF</span>
+            </div>
+            <a href="https://github.com/Alejog20/Invoice_generator_from_xlsx" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
+          </div>
+        </article>
+
+        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
+          <div style="position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
+            <div data-gal="2" style="position:absolute;inset:0">
+            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
+              <image-slot id="samay-1" shape="rect" placeholder="Samay homepage"></image-slot>
+            </div>
+            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="samay-2" shape="rect" placeholder="Product detail"></image-slot>
+            </div>
+            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="samay-3" shape="rect" placeholder="Admin panel"></image-slot>
+            </div>
+            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
+              <span data-count="2" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
+              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="2" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
+              <button type="button" onClick="{{ shotNext }}" data-gal-next="2" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
+            </div>
+          </div>
+          </div>
+          <div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">03</span>
+            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em">Samay</h3>
+            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">An e-commerce platform built to connect indigenous communities with digital markets. Authentication, admin panel, Java backend validation and a SQL database — the closing project of the Generation Full Stack Java bootcamp.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Java</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">SpringBoot</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">SQL</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Vanilla JS</span>
+            </div>
+            <a href="https://github.com/jorgeramirez2018/Proyecto-Samay" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
+          </div>
+        </article>
+
+        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
+          <div style="order:2;position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
+            <div data-gal="3" style="position:absolute;inset:0">
+            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
+              <image-slot id="finance-1" shape="rect" placeholder="The dashboard"></image-slot>
+            </div>
+            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="finance-2" shape="rect" placeholder="Monthly trends view"></image-slot>
+            </div>
+            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="finance-3" shape="rect" placeholder="Category breakdown"></image-slot>
+            </div>
+            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
+              <span data-count="3" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
+              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="3" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
+              <button type="button" onClick="{{ shotNext }}" data-gal-next="3" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
+            </div>
+          </div>
+          </div>
+          <div style="order:1">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">04</span>
+            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em;text-align:right">Finance Tracker</h3>
+            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">Drop in a Bancolombia statement and get a dashboard: expenses, income, monthly trends. No configuration, no spreadsheet gymnastics — just the picture of where the money went.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Pandas</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Streamlit</span>
+            </div>
+            <a href="https://github.com/Alejog20/Finance_tracker" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
+          </div>
+        </article>
+
+        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
+          <div style="position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
+            <div data-gal="4" style="position:absolute;inset:0">
+            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
+              <image-slot id="network-1" shape="rect" placeholder="Console output"></image-slot>
+            </div>
+            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="network-2" shape="rect" placeholder="Open-port report"></image-slot>
+            </div>
+            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="network-3" shape="rect" placeholder="Live connections"></image-slot>
+            </div>
+            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
+              <span data-count="4" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
+              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="4" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
+              <button type="button" onClick="{{ shotNext }}" data-gal-next="4" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
+            </div>
+          </div>
+          </div>
+          <div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">05</span>
+            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em">Network Traffic Analyzer</h3>
+            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">Reports open ports, live connections and packet metrics straight from the console. Pure Python, no heavy dependencies — the kind of tool you reach for during a quick security audit.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Sockets</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Networking</span>
+            </div>
+            <a href="https://github.com/Alejog20/Network_traffic_analysis" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
+          </div>
+        </article>
+
+        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
+          <div style="order:2;position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
+            <div data-gal="5" style="position:absolute;inset:0">
+            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
+              <image-slot id="reddit-1" shape="rect" placeholder="Sentiment results"></image-slot>
+            </div>
+            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="reddit-2" shape="rect" placeholder="The extraction run"></image-slot>
+            </div>
+            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
+              <image-slot id="reddit-3" shape="rect" placeholder="The output data"></image-slot>
+            </div>
+            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
+              <span data-count="5" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
+              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="5" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
+              <button type="button" onClick="{{ shotNext }}" data-gal-next="5" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
+            </div>
+          </div>
+          </div>
+          <div style="order:1">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">06</span>
+            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em;text-align:right">Reddit Data Extractor</h3>
+            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">Collects posts, comments and community metrics through the official Reddit API, always inside the rate limits. The output feeds sentiment analysis and opinion mining pipelines.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Reddit API</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">NLP</span>
+            </div>
+            <a href="https://github.com/Alejog20/Reddit_API_Data_extraction" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
+          </div>
+        </article>
+
+      </div>
+
+      <div style="display:flex;align-items:center;gap:18px;margin-top:30px">
+        <div style="display:flex;gap:4px;flex:1">
+          <sc-for list="{{ projTicks }}" as="tick" hint-placeholder-count="6">
+            <button type="button" onClick="{{ tick.go }}" aria-label="{{ tick.label }}" style="flex:1;height:26px;padding:0;background:transparent;border:0;cursor:pointer;display:flex;align-items:flex-end">
+              <span style="display:block;width:100%;height:{{ tick.h }};background:{{ tick.bg }};transition:height .3s ease, background .3s ease"></span>
+            </button>
+          </sc-for>
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6E6862;white-space:nowrap">{{ projName }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="habilidades" data-screen-label="Skills" style="position:relative;padding:clamp(46px,6vh,78px) clamp(20px,3.2vw,44px);border-top:1px solid rgba(242,239,234,.08);background:transparent;z-index:1">
+    <div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0"><div style="position:absolute;right:-6%;top:10%;width:clamp(280px,32vw,460px);height:clamp(280px,32vw,460px);opacity:.5;animation:omTurn 620s linear infinite">
+        <div style="position:absolute;inset:0;transform:rotate(-26deg) scaleY(.34);background:radial-gradient(closest-side, rgba(255,247,232,.85) 0 4%, rgba(255,226,186,.55) 9%, rgba(255,176,120,.26) 22%, rgba(190,140,210,.13) 44%, rgba(110,120,200,.07) 62%, transparent 78%);filter:blur(5px)"></div>
+        <div style="position:absolute;inset:0;transform:rotate(-26deg) scaleY(.34);background:radial-gradient(ellipse 52% 6% at 50% 50%, rgba(20,10,14,.55), transparent 70%);filter:blur(6px)"></div>
+        <div style="position:absolute;left:32%;top:32%;width:36%;height:36%;border-radius:50%;background:radial-gradient(closest-side, rgba(255,250,240,.9), rgba(255,214,168,.35) 40%, transparent 75%);filter:blur(9px)"></div>
+        <div style="position:absolute;inset:-18%;transform:rotate(-26deg) scaleY(.42);background:radial-gradient(closest-side, rgba(190,170,220,.10), transparent 72%);filter:blur(22px)"></div>
+      </div></div>
+      <div data-wrap="true" style="position:relative;z-index:1;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:clamp(22px,2.6vh,34px)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;color:#FF8C4A">03</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6E6862">Toolkit</span>
+        <div style="flex:1;height:1px;background:rgba(242,239,234,.10)"></div>
+      </div>
+      <p style="margin:0 0 clamp(22px,2.6vh,32px);max-width:52ch;font-size:clamp(17px,1.5vw,21px);line-height:1.55;color:#A8A29A;text-wrap:pretty">Listed the way I actually reach for them — the three at the top of each card are where most of the work happens.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(16px,2vw,24px)">
+        <div style="position:relative;overflow:hidden;padding:clamp(28px,3vw,34px) 0 0;border-top:1px solid rgba(242,239,234,.14)">
+          <div style="position:absolute;right:-130px;bottom:-170px;width:320px;height:320px;border-radius:50%;border:1px solid rgba(255,106,31,.16);pointer-events:none"></div>
+          <div style="position:absolute;right:-70px;bottom:-210px;width:320px;height:320px;border-radius:50%;border:1px solid rgba(242,239,234,.06);pointer-events:none"></div>
+          <div style="position:relative;display:flex;align-items:center;justify-content:space-between;margin-bottom:30px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#6E6862">A · Backend</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:#FF6A1F;box-shadow:0 0 12px 2px rgba(255,106,31,.6)"></span>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;gap:12px">
+            <div style="font-size:clamp(27px,2.7vw,36px);line-height:1;letter-spacing:-.03em;color:#F2EFEA">Python</div>
+            <div style="font-size:clamp(22px,2.1vw,28px);line-height:1;letter-spacing:-.025em;color:#C7C1B8">Java</div>
+            <div style="font-size:clamp(18px,1.7vw,22px);line-height:1;letter-spacing:-.02em;color:#8E8880">SpringBoot</div>
+          </div>
+          <div style="height:1px;margin:28px 0 24px;background:linear-gradient(to right,rgba(255,106,31,.55),rgba(242,239,234,.05))"></div>
+          <div style="position:relative;display:flex;flex-wrap:wrap;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">FastAPI</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Pandas</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">NumPy</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Selenium</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Requests</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">BeautifulSoup4</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Openpyxl</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Bash</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Git</span></div>
+        </div>
+        <div style="position:relative;overflow:hidden;padding:clamp(28px,3vw,34px) 0 0;border-top:1px solid rgba(242,239,234,.14)">
+          <div style="position:absolute;right:-130px;bottom:-170px;width:320px;height:320px;border-radius:50%;border:1px solid rgba(255,106,31,.16);pointer-events:none"></div>
+          <div style="position:absolute;right:-70px;bottom:-210px;width:320px;height:320px;border-radius:50%;border:1px solid rgba(242,239,234,.06);pointer-events:none"></div>
+          <div style="position:relative;display:flex;align-items:center;justify-content:space-between;margin-bottom:30px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#6E6862">B · Frontend</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:#FF6A1F;box-shadow:0 0 12px 2px rgba(255,106,31,.6)"></span>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;gap:12px">
+            <div style="font-size:clamp(27px,2.7vw,36px);line-height:1;letter-spacing:-.03em;color:#F2EFEA">JavaScript</div>
+            <div style="font-size:clamp(22px,2.1vw,28px);line-height:1;letter-spacing:-.025em;color:#C7C1B8">React</div>
+            <div style="font-size:clamp(18px,1.7vw,22px);line-height:1;letter-spacing:-.02em;color:#8E8880">Tailwind</div>
+          </div>
+          <div style="height:1px;margin:28px 0 24px;background:linear-gradient(to right,rgba(255,106,31,.55),rgba(242,239,234,.05))"></div>
+          <div style="position:relative;display:flex;flex-wrap:wrap;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">HTML5</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">CSS</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Bootstrap</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Vanilla JS</span></div>
+        </div>
+        <div style="position:relative;overflow:hidden;padding:clamp(28px,3vw,34px) 0 0;border-top:1px solid rgba(242,239,234,.14)">
+          <div style="position:absolute;right:-130px;bottom:-170px;width:320px;height:320px;border-radius:50%;border:1px solid rgba(255,106,31,.16);pointer-events:none"></div>
+          <div style="position:absolute;right:-70px;bottom:-210px;width:320px;height:320px;border-radius:50%;border:1px solid rgba(242,239,234,.06);pointer-events:none"></div>
+          <div style="position:relative;display:flex;align-items:center;justify-content:space-between;margin-bottom:30px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#6E6862">C · Data</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:#FF6A1F;box-shadow:0 0 12px 2px rgba(255,106,31,.6)"></span>
+          </div>
+          <div style="position:relative;display:flex;flex-direction:column;gap:12px">
+            <div style="font-size:clamp(27px,2.7vw,36px);line-height:1;letter-spacing:-.03em;color:#F2EFEA">Pandas</div>
+            <div style="font-size:clamp(22px,2.1vw,28px);line-height:1;letter-spacing:-.025em;color:#C7C1B8">Power BI</div>
+            <div style="font-size:clamp(18px,1.7vw,22px);line-height:1;letter-spacing:-.02em;color:#8E8880">SQL</div>
+          </div>
+          <div style="height:1px;margin:28px 0 24px;background:linear-gradient(to right,rgba(255,106,31,.55),rgba(242,239,234,.05))"></div>
+          <div style="position:relative;display:flex;flex-wrap:wrap;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Scikit-learn</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">TensorFlow</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">R</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Looker Studio</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">SQLite</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Jupyter</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A" style-hover="border-color:rgba(255,106,31,.55);color:#F2EFEA">Web scraping</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cv" data-screen-label="Experience" style="position:relative;padding:clamp(46px,6vh,78px) clamp(20px,3.2vw,44px);border-top:1px solid rgba(242,239,234,.08);background:transparent;z-index:1">
+    <div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0"><div style="position:absolute;right:-6%;top:1%;width:clamp(280px,34vw,460px);height:clamp(90px,10vw,150px);opacity:.6;transform:rotate(19deg);animation:omFloat 44s ease-in-out infinite">
+        <div style="position:absolute;right:8%;top:32%;width:88%;height:36%;border-radius:50%;background:linear-gradient(to left, rgba(255,236,210,.34), rgba(255,196,150,.12) 34%, rgba(255,170,120,.04) 62%, transparent 84%);filter:blur(11px)"></div>
+        <div style="position:absolute;right:8%;top:44%;width:96%;height:9%;border-radius:50%;background:linear-gradient(to left, rgba(170,215,255,.42), rgba(130,190,255,.14) 38%, transparent 78%);filter:blur(5px)"></div>
+        <div style="position:absolute;right:4%;top:36%;width:16%;height:30%;border-radius:50%;background:radial-gradient(closest-side, rgba(255,255,250,.95), rgba(215,235,255,.45) 32%, rgba(150,200,255,.12) 62%, transparent 82%);filter:blur(3px)"></div>
+        <div style="position:absolute;right:8.5%;top:45%;width:3.5%;height:12%;border-radius:50%;background:#FFFDF6;box-shadow:0 0 16px 5px rgba(230,240,255,.8)"></div>
+      </div></div>
+      <div data-wrap="true" style="position:relative;z-index:1;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:clamp(22px,2.6vh,34px)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;color:#FF8C4A">04</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6E6862">Experience</span>
+        <div style="flex:1;height:1px;background:rgba(242,239,234,.10)"></div>
+      </div>
+
+      <p style="margin:0 0 clamp(22px,2.6vh,32px);max-width:62ch;font-size:clamp(19px,2vw,26px);line-height:1.45;font-weight:400;letter-spacing:-.015em;color:#A8A29A;text-align:justify;hyphens:auto;text-wrap:pretty" data-just="true">Three years deep in automation and financial data. The short version: I find the slow, manual part of a process and remove it — then leave behind something the team can run without me.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:clamp(26px,3.4vw,52px);align-items:start">
+
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#6E6862">Work</span>
+          <div style="padding:clamp(28px,3vw,34px) 0 0;border-top:1px solid rgba(242,239,234,.16)">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:18px;flex-wrap:wrap">
+              <h3 style="margin:0;font-size:clamp(22px,2.2vw,30px);font-weight:500;letter-spacing:-.02em">Analyst &amp; Developer</h3>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;color:#A8A29A;white-space:nowrap">Sep 2022 — Now</span>
+            </div>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+              <span style="width:6px;height:6px;border-radius:50%;background:#FF6A1F;box-shadow:0 0 10px 1px rgba(255,106,31,.7)"></span>
+              <span style="font-size:15px;color:#FF8C4A">Iron Mountain Inc. · Bogotá</span>
+            </div>
+            <ul style="margin:26px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:15px">
+              <li style="display:flex;gap:14px;font-size:16px;line-height:1.6;color:#A8A29A"><span style="color:#FF6A1F;font-family:'JetBrains Mono',monospace;font-size:12px;padding-top:3px">01</span><span>Built Python tools with my team that cut reporting time by 90% — roughly 45 hours a month back to the people who needed them.</span></li>
+              <li style="display:flex;gap:14px;font-size:16px;line-height:1.6;color:#A8A29A"><span style="color:#FF6A1F;font-family:'JetBrains Mono',monospace;font-size:12px;padding-top:3px">02</span><span>Designed Power BI and Looker Studio dashboards for financial KPIs, used weekly by stakeholders to decide.</span></li>
+              <li style="display:flex;gap:14px;font-size:16px;line-height:1.6;color:#A8A29A"><span style="color:#FF6A1F;font-family:'JetBrains Mono',monospace;font-size:12px;padding-top:3px">03</span><span>Led more than eight projects end to end; customer satisfaction rose 25%.</span></li>
+              <li style="display:flex;gap:14px;font-size:16px;line-height:1.6;color:#A8A29A"><span style="color:#FF6A1F;font-family:'JetBrains Mono',monospace;font-size:12px;padding-top:3px">04</span><span>Built custom EDI billing integrations shaped around each client's own system.</span></li>
+            </ul>
+          </div>
+
+          
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#6E6862">Education</span>
+          <div style="padding:clamp(28px,3vw,34px) 0 0;border-top:1px solid rgba(242,239,234,.14)">
+            <div style="position:relative;padding-left:26px">
+              <div style="position:absolute;left:3px;top:6px;bottom:6px;width:1px;background:linear-gradient(to bottom,rgba(255,106,31,.7),rgba(255,106,31,.05))"></div>
+              <div style="position:relative;padding-bottom:28px">
+                <span style="position:absolute;left:-26px;top:6px;width:7px;height:7px;border-radius:50%;background:#FF6A1F"></span>
+                <div style="font-size:17px;color:#A8A29A">Full Stack Java Development</div>
+                <div style="margin-top:6px;font-size:14px;color:#A8A29A">Bootcamp Generation Colombia · 2025</div>
+              </div>
+              <div style="position:relative;padding-bottom:28px">
+                <span style="position:absolute;left:-26px;top:6px;width:7px;height:7px;border-radius:50%;background:rgba(255,106,31,.55)"></span>
+                <div style="font-size:17px;color:#A8A29A">International Business, BSc</div>
+                <div style="margin-top:6px;font-size:14px;color:#A8A29A">Universidad Santo Tomás · 2025</div>
+              </div>
+              <div style="position:relative">
+                <span style="position:absolute;left:-26px;top:6px;width:7px;height:7px;border-radius:50%;background:rgba(255,106,31,.35)"></span>
+                <div style="font-size:17px;color:#A8A29A">Backend Python Development</div>
+                <div style="margin-top:6px;font-size:14px;color:#A8A29A">Universidad de Caldas · 2022</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:clamp(28px,3vw,34px) 0 0;border-top:1px solid rgba(242,239,234,.10)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6E6862;margin-bottom:16px">Day to day</div>
+            <div style="display:flex;flex-wrap:wrap;gap:9px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A">Pandas</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A">FastAPI</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A">SpringBoot</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A">Power BI</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A">Looker Studio</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A">MySQL</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A">Git</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:9px 14px;border:1px solid rgba(242,239,234,.16);border-radius:3px;color:#A8A29A">React</span>
+            </div>
+          </div>
+
+          <a href="https://www.garcia-dev.co/assets/New CV.pdf" style="align-self:flex-start;margin-top:6px;padding:15px 30px;background:#F2EFEA;color:#08070A;font-size:14px;font-weight:600;letter-spacing:.02em;cursor:pointer" style-hover="background:#FF6A1F;color:#08070A">Download CV</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="position:relative;overflow:hidden">
+    <div aria-hidden="true" style="position:absolute;left:0;right:0;top:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0"><div style="position:absolute;left:0;top:calc(min(1420px,96vw) * -0.30 + 40px + min(1420px,96vw) * 0.252);transform:translateX(-19%);width:min(1420px,96vw);height:min(1420px,96vw);opacity:.78"><div style="position:absolute;inset:0;animation:omOrbit 118s ease-in-out infinite">
+        <div style="position:absolute;inset:0;animation:omWobble 96s ease-in-out infinite">
+          <div style="position:absolute;inset:0;transform:perspective(1900px) rotateZ(-18deg) rotateX(82deg);transform-style:preserve-3d;clip-path:inset(0 0 50% 0)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle closest-side, transparent 59.600%, rgba(186,214,232,0.050) 59.640%, rgba(186,214,232,0.068) 59.760%, rgba(186,214,232,0.050) 59.880%, transparent 59.920%, transparent 60.600%, rgba(198,228,244,0.070) 60.640%, rgba(198,228,244,0.095) 60.790%, rgba(198,228,244,0.070) 60.940%, transparent 60.980%, transparent 61.800%, rgba(190,220,238,0.060) 61.840%, rgba(190,220,238,0.081) 61.960%, rgba(190,220,238,0.060) 62.080%, transparent 62.120%, transparent 63.100%, rgba(198,228,244,0.080) 63.140%, rgba(198,228,244,0.108) 63.290%, rgba(198,228,244,0.080) 63.440%, transparent 63.480%, transparent 64.200%, rgba(182,212,232,0.050) 64.240%, rgba(182,212,232,0.068) 64.360%, rgba(182,212,232,0.050) 64.480%, transparent 64.520%, transparent 65.100%, rgba(190,220,238,0.040) 65.140%, rgba(190,220,238,0.054) 65.240%, rgba(190,220,238,0.040) 65.340%, transparent 65.380%, transparent 65.600%, rgba(204,232,248,0.100) 65.640%, rgba(204,232,248,0.135) 65.820%, rgba(204,232,248,0.100) 66.000%, transparent 66.040%, transparent 67.000%, rgba(192,222,240,0.060) 67.040%, rgba(192,222,240,0.081) 67.180%, rgba(192,222,240,0.060) 67.320%, transparent 67.360%, transparent 68.200%, rgba(184,214,234,0.040) 68.240%, rgba(184,214,234,0.054) 68.340%, rgba(184,214,234,0.040) 68.440%, transparent 68.480%, transparent 69.600%, rgba(208,234,250,0.130) 69.640%, rgba(208,234,250,0.176) 69.850%, rgba(208,234,250,0.130) 70.060%, transparent 70.100%, transparent 71.000%, rgba(190,220,238,0.050) 71.040%, rgba(190,220,238,0.068) 71.160%, rgba(190,220,238,0.050) 71.280%, transparent 71.320%, transparent 72.100%, rgba(206,232,248,0.120) 72.140%, rgba(206,232,248,0.162) 72.360%, rgba(206,232,248,0.120) 72.580%, transparent 72.620%, transparent 74.000%, rgba(194,224,242,0.080) 74.040%, rgba(194,224,242,0.108) 74.170%, rgba(194,224,242,0.080) 74.300%, transparent 74.340%, transparent 75.700%, rgba(212,238,252,0.160) 75.740%, rgba(212,238,252,0.216) 76.060%, rgba(212,238,252,0.160) 76.380%, transparent 76.420%, transparent 77.300%, rgba(216,240,254,0.180) 77.340%, rgba(216,240,254,0.243) 77.690%, rgba(216,240,254,0.180) 78.040%, transparent 78.080%, transparent 79.300%, rgba(200,228,246,0.100) 79.340%, rgba(200,228,246,0.135) 79.510%, rgba(200,228,246,0.100) 79.680%, transparent 79.720%, transparent 80.600%, rgba(190,220,238,0.060) 80.640%, rgba(190,220,238,0.081) 80.760%, rgba(190,220,238,0.060) 80.880%, transparent 80.920%, transparent 81.400%, rgba(206,232,248,0.120) 81.440%, rgba(206,232,248,0.162) 81.680%, rgba(206,232,248,0.120) 81.920%, transparent 81.960%, transparent 82.900%, rgba(224,244,255,0.360) 82.940%, rgba(224,244,255,0.486) 83.850%, rgba(224,244,255,0.360) 84.760%, transparent 84.800%, transparent 85.600%, rgba(194,224,242,0.070) 85.640%, rgba(194,224,242,0.095) 85.900%, rgba(194,224,242,0.070) 86.160%, transparent 86.200%, transparent 100%)"></div>
+            <div style="position:absolute;inset:0;animation:omTurn 74s linear infinite;background:conic-gradient(from 0deg at 50% 50%, rgba(236,250,255,.16) 0deg, rgba(226,246,255,.03) 26deg, transparent 58deg, rgba(216,242,255,.13) 104deg, transparent 148deg, rgba(1,8,18,.34) 186deg, transparent 226deg, rgba(226,246,255,.11) 264deg, transparent 306deg, rgba(1,8,18,.26) 336deg, rgba(236,250,255,.16) 360deg);-webkit-mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%);mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%)"></div>
+            <div style="position:absolute;inset:0;animation:omTurnBack 214s linear infinite;background:conic-gradient(from 210deg at 50% 50%, transparent 0deg, rgba(180,220,246,.05) 60deg, transparent 130deg, rgba(200,232,252,.04) 250deg, transparent 330deg);-webkit-mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%);mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%)"></div>
+            <div style="position:absolute;inset:0;filter:blur(7px);background:radial-gradient(circle closest-side, transparent 56%, rgba(150,206,240,.045) 70%, rgba(198,232,250,.065) 84%, transparent 91%)"></div>
+          </div>
+          <div style="position:absolute;left:29%;top:29%;width:42%;height:42%;border-radius:50%;overflow:hidden;box-shadow:0 0 200px 26px rgba(40,170,226,.16), 0 0 66px rgba(120,224,250,.20)">
+            <div style="position:absolute;inset:0;animation:omHue 96s ease-in-out infinite;background:radial-gradient(circle at 60% 34%, #EAFBFF 0%, #7FE6FA 11%, #35C8F2 26%, #12A2E4 42%, #1268D8 60%, #2B3FC4 76%, #16226E 89%, #050826 100%)"></div>
+            <div style="position:absolute;inset:0;transform:rotate(72deg);filter:blur(12px);opacity:.7;background:linear-gradient(to bottom, transparent 0 14%, rgba(226,248,255,.05) 22% 29%, transparent 36% 46%, rgba(4,44,88,.06) 52% 60%, transparent 67% 76%, rgba(214,244,255,.04) 81% 87%, transparent 94%)"></div>
+            <div style="position:absolute;inset:0;transform:rotate(72deg);overflow:hidden;border-radius:50%">
+              <div style="position:absolute;left:-8%;top:-8%;width:116%;height:116%;filter:blur(9px);opacity:.9;animation:omSurface 74s linear infinite;background-repeat:repeat;background-size:52% 100%, 78% 100%, 34% 100%;background-image:repeating-linear-gradient(90deg, rgba(226,248,255,.075) 0 3%, transparent 3% 11%, rgba(3,38,78,.10) 11% 15%, transparent 15% 26%),repeating-linear-gradient(90deg, rgba(198,238,255,.05) 0 5%, transparent 5% 19%),repeating-linear-gradient(90deg, rgba(4,44,88,.07) 0 2%, transparent 2% 9%);-webkit-mask-image:radial-gradient(circle at 50% 50%, #000 0 62%, rgba(0,0,0,.35) 82%, transparent 96%);mask-image:radial-gradient(circle at 50% 50%, #000 0 62%, rgba(0,0,0,.35) 82%, transparent 96%)"></div>
+              <div style="position:absolute;left:-8%;top:-8%;width:116%;height:116%;filter:blur(14px);opacity:.85;animation:omSurface 112s linear infinite reverse;background-repeat:repeat;background-size:44% 100%;background-image:radial-gradient(ellipse 14% 30% at 20% 44%, rgba(232,250,255,.10), transparent 70%),radial-gradient(ellipse 12% 24% at 68% 60%, rgba(2,40,84,.10), transparent 72%);-webkit-mask-image:radial-gradient(circle at 50% 50%, #000 0 62%, rgba(0,0,0,.35) 82%, transparent 96%);mask-image:radial-gradient(circle at 50% 50%, #000 0 62%, rgba(0,0,0,.35) 82%, transparent 96%)"></div>
+              <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, transparent 0 58%, rgba(2,16,34,.16) 82%, rgba(1,9,20,.38) 95%, rgba(1,6,14,.5) 100%)"></div>
+            </div>
+            <div style="position:absolute;inset:0;background:radial-gradient(ellipse 30% 22% at 32% 16%, rgba(206,240,255,.26), transparent 64%),radial-gradient(ellipse 30% 22% at 71% 80%, rgba(3,34,72,.30), transparent 68%)"></div>
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, transparent 60%, rgba(4,28,58,.22) 82%, rgba(2,16,36,.58) 95%, rgba(1,8,20,.76) 100%)"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(-108deg, transparent 0 34%, rgba(2,12,32,.34) 62%, rgba(1,7,20,.72) 88%, rgba(1,5,14,.86) 100%)"></div>
+            <div style="position:absolute;inset:0;border-radius:50%;box-shadow:inset -10px 12px 52px rgba(190,236,255,.20), inset 30px -32px 76px rgba(1,10,24,.5)"></div>
+          </div>
+          <div style="position:absolute;left:29%;top:29%;width:42%;height:42%;border-radius:50%;box-shadow:0 0 0 1.5px rgba(166,222,250,.16)"></div>
+          <div style="position:absolute;left:29%;top:29%;width:42%;height:42%;pointer-events:none">
+            <div style="position:absolute;left:-19%;top:-14%;width:56%;height:128%;border-radius:50%;filter:blur(20px);mix-blend-mode:screen;animation:omAurora 26s ease-in-out infinite;background:radial-gradient(ellipse 58% 50% at 74% 46%, rgba(255,58,52,.62), rgba(226,32,46,.30) 44%, rgba(150,16,40,.10) 68%, transparent 84%)"></div>
+            <div style="position:absolute;right:-21%;top:-18%;width:62%;height:136%;border-radius:50%;filter:blur(22px);mix-blend-mode:screen;animation:omAurora 31s ease-in-out infinite reverse;background:radial-gradient(ellipse 60% 52% at 26% 52%, rgba(255,70,58,.70), rgba(232,36,44,.34) 42%, rgba(158,18,42,.12) 66%, transparent 84%)"></div>
+            <div style="position:absolute;left:34%;top:6%;width:16%;height:9%;border-radius:50%;filter:blur(4px);background:radial-gradient(closest-side, rgba(255,255,255,.92), rgba(214,246,255,.35) 52%, transparent 80%)"></div>
+          </div>
+          <div style="position:absolute;inset:0;transform:perspective(1900px) rotateZ(-18deg) rotateX(82deg);transform-style:preserve-3d;clip-path:inset(50% 0 0 0)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle closest-side, transparent 59.600%, rgba(186,214,232,0.050) 59.640%, rgba(186,214,232,0.068) 59.760%, rgba(186,214,232,0.050) 59.880%, transparent 59.920%, transparent 60.600%, rgba(198,228,244,0.070) 60.640%, rgba(198,228,244,0.095) 60.790%, rgba(198,228,244,0.070) 60.940%, transparent 60.980%, transparent 61.800%, rgba(190,220,238,0.060) 61.840%, rgba(190,220,238,0.081) 61.960%, rgba(190,220,238,0.060) 62.080%, transparent 62.120%, transparent 63.100%, rgba(198,228,244,0.080) 63.140%, rgba(198,228,244,0.108) 63.290%, rgba(198,228,244,0.080) 63.440%, transparent 63.480%, transparent 64.200%, rgba(182,212,232,0.050) 64.240%, rgba(182,212,232,0.068) 64.360%, rgba(182,212,232,0.050) 64.480%, transparent 64.520%, transparent 65.100%, rgba(190,220,238,0.040) 65.140%, rgba(190,220,238,0.054) 65.240%, rgba(190,220,238,0.040) 65.340%, transparent 65.380%, transparent 65.600%, rgba(204,232,248,0.100) 65.640%, rgba(204,232,248,0.135) 65.820%, rgba(204,232,248,0.100) 66.000%, transparent 66.040%, transparent 67.000%, rgba(192,222,240,0.060) 67.040%, rgba(192,222,240,0.081) 67.180%, rgba(192,222,240,0.060) 67.320%, transparent 67.360%, transparent 68.200%, rgba(184,214,234,0.040) 68.240%, rgba(184,214,234,0.054) 68.340%, rgba(184,214,234,0.040) 68.440%, transparent 68.480%, transparent 69.600%, rgba(208,234,250,0.130) 69.640%, rgba(208,234,250,0.176) 69.850%, rgba(208,234,250,0.130) 70.060%, transparent 70.100%, transparent 71.000%, rgba(190,220,238,0.050) 71.040%, rgba(190,220,238,0.068) 71.160%, rgba(190,220,238,0.050) 71.280%, transparent 71.320%, transparent 72.100%, rgba(206,232,248,0.120) 72.140%, rgba(206,232,248,0.162) 72.360%, rgba(206,232,248,0.120) 72.580%, transparent 72.620%, transparent 74.000%, rgba(194,224,242,0.080) 74.040%, rgba(194,224,242,0.108) 74.170%, rgba(194,224,242,0.080) 74.300%, transparent 74.340%, transparent 75.700%, rgba(212,238,252,0.160) 75.740%, rgba(212,238,252,0.216) 76.060%, rgba(212,238,252,0.160) 76.380%, transparent 76.420%, transparent 77.300%, rgba(216,240,254,0.180) 77.340%, rgba(216,240,254,0.243) 77.690%, rgba(216,240,254,0.180) 78.040%, transparent 78.080%, transparent 79.300%, rgba(200,228,246,0.100) 79.340%, rgba(200,228,246,0.135) 79.510%, rgba(200,228,246,0.100) 79.680%, transparent 79.720%, transparent 80.600%, rgba(190,220,238,0.060) 80.640%, rgba(190,220,238,0.081) 80.760%, rgba(190,220,238,0.060) 80.880%, transparent 80.920%, transparent 81.400%, rgba(206,232,248,0.120) 81.440%, rgba(206,232,248,0.162) 81.680%, rgba(206,232,248,0.120) 81.920%, transparent 81.960%, transparent 82.900%, rgba(224,244,255,0.360) 82.940%, rgba(224,244,255,0.486) 83.850%, rgba(224,244,255,0.360) 84.760%, transparent 84.800%, transparent 85.600%, rgba(194,224,242,0.070) 85.640%, rgba(194,224,242,0.095) 85.900%, rgba(194,224,242,0.070) 86.160%, transparent 86.200%, transparent 100%)"></div>
+            <div style="position:absolute;inset:0;animation:omTurn 74s linear infinite;background:conic-gradient(from 0deg at 50% 50%, rgba(236,250,255,.16) 0deg, rgba(226,246,255,.03) 26deg, transparent 58deg, rgba(216,242,255,.13) 104deg, transparent 148deg, rgba(1,8,18,.34) 186deg, transparent 226deg, rgba(226,246,255,.11) 264deg, transparent 306deg, rgba(1,8,18,.26) 336deg, rgba(236,250,255,.16) 360deg);-webkit-mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%);mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%)"></div>
+            <div style="position:absolute;inset:0;animation:omTurnBack 214s linear infinite;background:conic-gradient(from 210deg at 50% 50%, transparent 0deg, rgba(180,220,246,.05) 60deg, transparent 130deg, rgba(200,232,252,.04) 250deg, transparent 330deg);-webkit-mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%);mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%)"></div>
+            <div style="position:absolute;inset:0;filter:blur(7px);background:radial-gradient(circle closest-side, transparent 56%, rgba(150,206,240,.045) 70%, rgba(198,232,250,.065) 84%, transparent 91%)"></div>
+            <div style="position:absolute;inset:0;background:conic-gradient(from 168deg at 50% 50%, rgba(1,7,18,.72) 0deg, rgba(1,7,18,.55) 7deg, transparent 15deg, transparent 345deg, rgba(1,7,18,.45) 353deg, rgba(1,7,18,.72) 360deg);-webkit-mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%);mask-image:radial-gradient(circle closest-side, transparent 0 59%, #000 60% 86%, transparent 87%)"></div>
+          </div>
+          </div>
+        </div>
+      </div><div style="position:absolute;left:-6%;top:14%;width:74%;height:86%;background:radial-gradient(ellipse 58% 52% at 34% 40%, rgba(3,5,8,.72), rgba(3,5,8,.45) 52%, transparent 78%)"></div></div>
+<section id="contacto" data-screen-label="Contact" style="position:relative;z-index:1;padding:clamp(46px,6vh,78px) clamp(20px,3.2vw,44px) clamp(70px,9vh,120px);border-top:1px solid rgba(242,239,234,.08);background:transparent;z-index:1">
+    
+      <div data-wrap="true" style="position:relative;z-index:1;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:clamp(22px,2.6vh,34px)">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;color:#FF8C4A">05</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6E6862">Contact</span>
+        <div style="flex:1;height:1px;background:rgba(242,239,234,.10)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(28px,4vw,64px);align-items:start">
+        <div>
+          <h2 style="margin:0 0 26px;font-size:clamp(30px,4vw,56px);line-height:1.04;font-weight:500;letter-spacing:-.03em;text-wrap:balance">Have something that should be running by itself?</h2>
+          <p style="margin:0 0 34px;max-width:44ch"><span style="background:#F2EFEA;color:#08070A;font-size:17px;line-height:1.85;padding:.14em .38em;box-decoration-break:clone;-webkit-box-decoration-break:clone">Tell me what's taking too long and I'll tell you honestly whether it's worth automating. Based in Bogotá, working with teams anywhere.</span></p>
+          <div style="display:flex;flex-direction:column;gap:14px">
+          </div>
+          <div style="display:flex;gap:22px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase">
+            <a href="https://www.linkedin.com/in/alejandro-garcia-38a9339a/">LinkedIn</a>
+            <a href="https://github.com/Alejog20">GitHub</a>
+          </div>
+        </div>
+        <form action="mailto:garciaalejandro2552@gmail.com" method="post" enctype="text/plain" style="display:flex;flex-direction:column;gap:26px;padding:clamp(26px,3vw,38px);background:linear-gradient(155deg, rgba(242,239,234,.055), rgba(26,23,28,.05) 46%, rgba(10,9,11,.05));border:1px solid rgba(242,239,234,.15);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 0 0 1px rgba(242,239,234,.02),0 26px 70px -34px rgba(0,0,0,.9)">
+          <label style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;transition:color .18s;color:{{ labName }}">Name</span>
+            <input type="text" name="name" placeholder="{{ phName }}" onFocus="{{ onFocusName }}" onBlur="{{ onBlurName }}" onInput="{{ onInputName }}" style="background:transparent;border:0;border-bottom:1px solid rgba(242,239,234,.18);padding:10px 0;color:#F2EFEA;font-family:'Space Grotesk',sans-serif;font-size:16px;outline:none" style-focus="border-color:#FF6A1F" />
+          </label>
+          <label style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;transition:color .18s;color:{{ labEmail }}">Email</span>
+            <input type="email" name="email" placeholder="{{ phEmail }}" onFocus="{{ onFocusEmail }}" onBlur="{{ onBlurEmail }}" onInput="{{ onInputEmail }}" style="background:transparent;border:0;border-bottom:1px solid rgba(242,239,234,.18);padding:10px 0;color:#F2EFEA;font-family:'Space Grotesk',sans-serif;font-size:16px;outline:none" style-focus="border-color:#FF6A1F" />
+          </label>
+          <label style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;transition:color .18s;color:{{ labMsg }}">What do you need?</span>
+            <textarea name="message" rows="4" placeholder="{{ phMsg }}" onFocus="{{ onFocusMsg }}" onBlur="{{ onBlurMsg }}" onInput="{{ onInputMsg }}" style="background:transparent;border:0;border-bottom:1px solid rgba(242,239,234,.18);padding:10px 0;color:#F2EFEA;font-family:'Space Grotesk',sans-serif;font-size:16px;outline:none;resize:vertical" style-focus="border-color:#FF6A1F"></textarea>
+          </label>
+          <button type="submit" style="align-self:flex-start;margin-top:6px;padding:15px 30px;border:0;background:#F2EFEA;color:#08070A;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;letter-spacing:.02em;cursor:pointer" style-hover="background:#FF6A1F">Send message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:30px clamp(20px,3.2vw,44px);background:transparent;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#6E6862">
+    <span>© 2026 Alejandro García</span>
+  </footer>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;diskColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#FF6A1F&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#FF6A1F&quot;,&quot;#FF3A12&quot;,&quot;#FFA23A&quot;,&quot;#7FB8FF&quot;],&quot;section&quot;:&quot;Black hole&quot;},&quot;intensity&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.3,&quot;max&quot;:2.2,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Black hole&quot;},&quot;spinSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0,&quot;max&quot;:2.5,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Black hole&quot;},&quot;quality&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;balanced&quot;,&quot;options&quot;:[&quot;low&quot;,&quot;balanced&quot;,&quot;high&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Performance&quot;}}">
+const VERT = `#version 300 es
+in vec2 aPos; void main(){ gl_Position = vec4(aPos,0.0,1.0); }`;
+
+const COMMON = `
+float hash13(vec3 p){ p = fract(p*0.1031); p += dot(p, p.yzx+33.33); return fract((p.x+p.y)*p.z); }
+float noise3(vec3 x){
+  vec3 i = floor(x), f = fract(x); f = f*f*(3.0-2.0*f);
+  float a = mix(mix(mix(hash13(i+vec3(0,0,0)),hash13(i+vec3(1,0,0)),f.x), mix(hash13(i+vec3(0,1,0)),hash13(i+vec3(1,1,0)),f.x), f.y),
+                mix(mix(hash13(i+vec3(0,0,1)),hash13(i+vec3(1,0,1)),f.x), mix(hash13(i+vec3(0,1,1)),hash13(i+vec3(1,1,1)),f.x), f.y), f.z);
+  return a;
+}
+float fbm(vec3 p, int oct){ float s=0.0, a=0.5; for(int i=0;i<6;i++){ if(i>=oct) break; s += a*noise3(p); p *= 2.07; a *= 0.5; } return s; }
+vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1.0); }
+`;
+
+const FRAG = `#version 300 es
+precision highp float;
+out vec4 O;
+uniform vec2 uRes; uniform float uTime; uniform vec3 uCam; uniform mat3 uMat;
+uniform float uFocal, uFall, uInt, uSpin, uDirect; uniform vec3 uTint; uniform int uSteps; uniform vec2 uShift;
+` + COMMON + `
+const float RIN = 6.3;
+const float ROUT = 22.0;
+
+vec3 temperature(float t){
+  t = clamp(t, 0.0, 1.0);
+  t = t*t*t*(t*(t*6.0 - 15.0) + 10.0);
+  vec3 c = vec3(0.30, 0.028, 0.006);
+  c = mix(c, vec3(0.82, 0.115, 0.018), smoothstep(0.00, 0.28, t));
+  c = mix(c, vec3(1.00, 0.330, 0.055), smoothstep(0.20, 0.52, t));
+  c = mix(c, vec3(1.00, 0.600, 0.190), smoothstep(0.46, 0.76, t));
+  c = mix(c, vec3(1.00, 0.855, 0.590), smoothstep(0.70, 0.92, t));
+  c = mix(c, vec3(0.99, 0.960, 0.930), smoothstep(0.89, 1.00, t));
+  return c;
+}
+
+vec3 stars(vec3 rd){
+  vec3 col = vec3(0.0);
+  for(int L=0; L<3; L++){
+    float sc = 190.0 + float(L)*260.0;
+    vec3 p = rd*sc; vec3 id = floor(p); vec3 f = fract(p) - 0.5;
+    float h = hash13(id + float(L)*17.7);
+    if(h > 0.972){
+      float b = pow(fract(h*97.31), 6.0);
+      vec3 off = (vec3(fract(h*41.3), fract(h*71.9), fract(h*13.7)) - 0.5)*0.6;
+      float d = length(f - off);
+      float tw = 0.72 + 0.28*sin(uTime*(1.2+3.0*fract(h*53.1)) + h*40.0);
+      vec3 tint = mix(vec3(0.72,0.80,1.0), vec3(1.0,0.86,0.68), fract(h*29.7));
+      col += tint * pow(max(0.0, 1.0 - d*2.6), 22.0) * (0.6 + 7.0*b) * tw;
+    }
+  }
+  float neb = fbm(rd*2.6 + 11.0, 4);
+  float band = smoothstep(0.42, 0.95, neb) * smoothstep(0.62, 0.05, abs(rd.y*1.25 + 0.12));
+  col += mix(vec3(0.035,0.045,0.085), vec3(0.09,0.05,0.05), neb) * band * 0.75;
+  return col;
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy - 0.5*uRes) / uRes.y;
+  vec2 sv = uv + uShift;
+  vec3 rd = normalize(uMat * vec3(sv.x, sv.y, uFocal));
+  vec3 pos = uCam, dir = rd;
+  vec3 hvec = cross(pos, dir);
+  float h2 = dot(hvec, hvec);
+
+  vec3 col = vec3(0.0);
+  float trans = 1.0;
+  float minR = 1e9;
+  bool captured = false;
+  float jitter = 0.55 + 0.45*hash13(vec3(gl_FragCoord.xy, floor(uTime*24.0)));
+
+  for(int i=0; i<420; i++){
+    if(i >= uSteps) break;
+    float r = length(pos);
+    minR = min(minR, r);
+    if(r < 2.02){ captured = true; break; }
+    if(r > 60.0 && dot(pos, dir) > 0.0) break;
+
+    float dt = max(0.14, 0.070*(r - 2.0));
+    if(r < ROUT + 6.0) dt = min(dt, 0.30*abs(pos.y) + 0.075);
+    if(i == 0) dt *= jitter;
+
+    if(r > RIN*0.9 && r < ROUT){
+      float hgt = 0.052*r + 0.30 + 0.55*smoothstep(ROUT*0.6, ROUT, r);
+      float vert = exp(-2.3 * (pos.y/hgt) * (pos.y/hgt));
+      if(vert > 0.004){
+        float ang = atan(pos.z, pos.x);
+        float w = uSpin * 9.0 / pow(r, 1.5);
+        float a2 = ang + uTime*w;
+        vec2 pol = vec2(cos(a2), sin(a2)) * r;
+        float n1 = fbm(vec3(pol*0.30, r*0.16 - uTime*0.035), 4);
+        float n2 = fbm(vec3(pol*1.10, r*0.35 + uTime*0.09), 3);
+        float arms = 0.55 + 0.75*abs(sin(a2*1.5 - r*0.30));
+        float dens = vert;
+        dens *= smoothstep(RIN, RIN*1.22, r) * smoothstep(ROUT, ROUT*0.58, r);
+        dens *= (smoothstep(0.30, 0.92, n1)*1.75 + 0.10) * (0.55 + 0.85*n2) * arms;
+        dens *= uInt;
+        if(dens > 0.0008){
+          float tN = clamp((ROUT - r)/(ROUT - RIN), 0.0, 1.0);
+          float T = pow(tN, 2.1);
+          vec3 vel = normalize(cross(vec3(0.0,1.0,0.0), pos)) * (0.72/sqrt(r*0.5));
+          float dop = 1.0 / max(0.34, 1.0 - dot(vel, -dir));
+          float beam = pow(dop, 2.7);
+          float grav = sqrt(max(0.06, 1.0 - 2.0/r));
+          vec3 base = temperature(clamp(T*1.05 + (dop-1.0)*0.30, 0.0, 1.0));
+          vec3 emis = base * uTint * (0.28 + 5.2*T*T) * beam * grav;
+          float flare = pow(max(0.0, sin(a2*3.0 + uTime*0.85 - r*0.22)), 10.0) * smoothstep(ROUT*0.55, RIN, r);
+          emis += vec3(1.0, 0.72, 0.45) * flare * 2.6 * n2;
+          col += emis * dens * dt * trans * 0.26;
+          trans *= exp(-dens * dt * 0.55);
+          if(trans < 0.006) break;
+        }
+      }
+    }
+
+    vec3 acc = -1.5 * h2 * pos / pow(dot(pos,pos), 2.5);
+    dir += acc * dt;
+    pos += dir * dt;
+  }
+
+  if(!captured) col += stars(normalize(dir)) * trans;
+
+  float ring = exp(-pow((minR - 3.0)*2.1, 2.0));
+  col += vec3(1.0, 0.62, 0.32) * uTint * ring * 0.42 * uInt;
+
+  float glow = exp(-pow((minR - 4.2)*0.42, 2.0));
+  col += vec3(0.45, 0.20, 0.10) * uTint * glow * 0.10 * uInt;
+
+  if(uDirect > 0.5){
+    float L2 = dot(col, vec3(0.2126,0.7152,0.0722));
+    col = mix(col, vec3(L2), smoothstep(0.9, 5.5, L2)*0.60);
+    col = aces(col * 1.03);
+    col = pow(col, vec3(0.4545));
+    float g = hash13(vec3(gl_FragCoord.xy, uTime*60.0));
+    col += (g - 0.5) * 0.012 + (hash13(vec3(gl_FragCoord.xy*1.7, uTime*70.0)) - 0.5)*(1.8/255.0);
+    float v = length(uv*vec2(0.78,1.0));
+    col *= smoothstep(1.45, 0.30, v)*0.55 + 0.45;
+  }
+  O = vec4(col, 1.0);
+}`;
+
+const BLUR = `#version 300 es
+precision highp float;
+out vec4 O;
+uniform sampler2D uTex; uniform vec2 uTexel; uniform vec2 uDir; uniform float uBright;
+void main(){
+  vec2 uv = gl_FragCoord.xy * uTexel;
+  float w[5]; w[0]=0.227027; w[1]=0.194594; w[2]=0.121621; w[3]=0.054054; w[4]=0.016216;
+  vec3 s = vec3(0.0);
+  for(int i=-4;i<=4;i++){
+    vec3 c = texture(uTex, uv + uDir*uTexel*float(i)*1.35).rgb;
+    if(uBright > 0.5) c = max(c - 0.85, 0.0) * 1.15;
+    s += c * w[i<0?-i:i];
+  }
+  O = vec4(s, 1.0);
+}`;
+
+const COMP = `#version 300 es
+precision highp float;
+out vec4 O;
+uniform sampler2D uScene, uBloom; uniform vec2 uRes; uniform float uTime, uFall;
+` + COMMON + `
+void main(){
+  vec2 uv = gl_FragCoord.xy / uRes;
+  vec2 c = uv - 0.5;
+  float ab = 0.0016 + 0.0030*uFall;
+  vec3 sc;
+  sc.r = texture(uScene, uv + c*ab).r;
+  sc.g = texture(uScene, uv).g;
+  sc.b = texture(uScene, uv - c*ab).b;
+  vec3 bl = texture(uBloom, uv).rgb;
+  vec3 col = sc + bl*0.48;
+  float L = dot(col, vec3(0.2126,0.7152,0.0722));
+  col = mix(col, vec3(L), smoothstep(0.9, 5.5, L)*0.60);
+  col = aces(col*1.04);
+  col = pow(col, vec3(0.4545));
+  col = mix(vec3(dot(col, vec3(0.299,0.587,0.114))), col, 1.06);
+  float g = hash13(vec3(gl_FragCoord.xy, floor(uTime*24.0)));
+  col += (g - 0.5)*0.011;
+  float d = hash13(vec3(gl_FragCoord.xy*1.7, floor(uTime*30.0)));
+  col += (d - 0.5)*(1.8/255.0);
+  float v = length(c*vec2(1.55,2.0));
+  col *= smoothstep(1.42, 0.28, v)*0.55 + 0.45;
+  O = vec4(col, 1.0);
+}`;
+
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.canvasRef = React.createRef();
+    this.overlayRef = React.createRef();
+    this.starRef = React.createRef();
+    this.projRef = React.createRef();
+    this.statsRef = React.createRef();
+    this.state = { typed: '', phName: '', phEmail: '', phMsg: '', proj: 0, projN: 6 };
+    this.phT = {}; this.focus = {};
+    this.mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+    this.fall = 0; this.fallT = 0;
+    this.t0 = performance.now();
+    this.visible = true;
+  }
+
+  renderVals(){
+    return {
+      canvasRef: this.canvasRef,
+      overlayRef: this.overlayRef,
+      starRef: this.starRef,
+      projRef: this.projRef,
+      statsRef: this.statsRef,
+      m1: Math.round(90 * (this.state.mp || 0)) + '%',
+      m2: Math.round(45 * (this.state.mp || 0)) + 'h',
+      m3: Math.round(8 * (this.state.mp || 0)) + '+',
+      projLabel: String(this.state.proj + 1).padStart(2, '0') + ' / ' + String(this.state.projN).padStart(2, '0'),
+      projTicks: Array.from({ length: this.state.projN }, (_, i) => ({
+        go: () => this.goProj(i),
+        label: 'Project ' + (i + 1),
+        h: i === this.state.proj ? '3px' : (i < this.state.proj ? '2px' : '1px'),
+        bg: i === this.state.proj ? '#FF6A1F' : (i < this.state.proj ? 'rgba(242,239,234,.34)' : 'rgba(242,239,234,.13)')
+      })),
+      projName: this.PROJ_NAMES[this.state.proj] || '',
+      shotPrev: (e) => this.stepShot(e, -1),
+      shotNext: (e) => this.stepShot(e, 1),
+      prevProj: () => this.stepProj(-1),
+      nextProj: () => this.stepProj(1),
+      typed: this.state.typed,
+      phName: this.state.phName,
+      phEmail: this.state.phEmail,
+      phMsg: this.state.phMsg,
+      onFocusName: this.holdPh('phName'), onBlurName: this.resumePh('phName'), onInputName: this.markPh('phName'),
+      onFocusEmail: this.holdPh('phEmail'), onBlurEmail: this.resumePh('phEmail'), onInputEmail: this.markPh('phEmail'),
+      onFocusMsg: this.holdPh('phMsg'), onBlurMsg: this.resumePh('phMsg'), onInputMsg: this.markPh('phMsg'),
+      labName: this.state.actName ? '#FF8C4A' : '#6E6862',
+      labEmail: this.state.actEmail ? '#FF8C4A' : '#6E6862',
+      labMsg: this.state.actMsg ? '#FF8C4A' : '#6E6862'
+    };
+  }
+
+  ACT = { phName: 'actName', phEmail: 'actEmail', phMsg: 'actMsg' };
+
+  markPh(key){
+    return (e) => this.setState({ [this.ACT[key]]: !!(e && e.target && e.target.value.length) });
+  }
+
+  PH_SETS = {
+    phName: ['Camila Restrepo', 'Daniel Okonkwo', 'María José Vélez', 'Tomás Herrera'],
+    phEmail: ['camila@northrail.co', 'd.okonkwo@fintrail.io', 'mj@velez-studio.com'],
+    phMsg: [
+      'We close the books by hand every month — three days of copy-paste.',
+      'Our orders never match the bank feed. Can that be reconciled automatically?',
+      'I have a 40-tab spreadsheet nobody trusts. Turn it into a dashboard?'
+    ]
+  };
+
+  holdPh(key){
+    return () => {
+      this.focus[key] = true;
+      clearTimeout(this.phT[key]);
+      this.setState({ [key]: '', [this.ACT[key]]: true });
+    };
+  }
+
+  resumePh(key){
+    return (e) => {
+      const filled = !!(e && e.target && e.target.value.trim());
+      this.setState({ [this.ACT[key]]: filled });
+      if(filled) return;
+      this.focus[key] = false;
+    };
+  }
+
+  wait(ms){
+    return new Promise(res => { this.phT['w' + (this.phSeq = (this.phSeq || 0) + 1)] = setTimeout(res, ms); });
+  }
+
+  async typeField(key, text){
+    if(this.focus[key]) return;
+    for(let n = 1; n <= text.length; n++){
+      if(this.stopped) return;
+      if(this.focus[key]){ this.setState({ [key]: '' }); return; }
+      this.setState({ [key]: text.slice(0, n) + '▍' });
+      await this.wait(30 + Math.random() * 62 + (text[n-1] === ' ' ? 38 : 0));
+    }
+    this.setState({ [key]: text });
+  }
+
+  async eraseField(key){
+    if(this.focus[key]){ this.setState({ [key]: '' }); return; }
+    const cur = (this.state[key] || '').replace('▍', '');
+    for(let n = cur.length; n > 0; n -= (n > 26 ? 2 : 1)){
+      if(this.stopped) return;
+      if(this.focus[key]){ this.setState({ [key]: '' }); return; }
+      this.setState({ [key]: cur.slice(0, n) + '▍' });
+      await this.wait(12 + Math.random() * 18);
+    }
+    this.setState({ [key]: '' });
+  }
+
+  // One coordinated round per enquiry: name and email are written once and then
+  // stay put for the whole time the message is being written.
+  async startPlaceholders(){
+    await this.wait(1200);
+    for(let i = 0; !this.stopped; i++){
+      const nameList = this.PH_SETS.phName, mailList = this.PH_SETS.phEmail, msgList = this.PH_SETS.phMsg;
+      const k = i % msgList.length;
+      await this.typeField('phName', nameList[k % nameList.length]);
+      await this.wait(300);
+      await this.typeField('phEmail', mailList[k % mailList.length]);
+      await this.wait(420);
+      await this.typeField('phMsg', msgList[k]);
+      await this.wait(3400);
+      await this.eraseField('phMsg');
+      await this.wait(220);
+      await this.eraseField('phEmail');
+      await this.eraseField('phName');
+      await this.wait(700);
+    }
+  }
+
+  headline(){ return this.props.headline || 'Bring your idea to life on the web'; }
+
+  watchStats(){
+    const el = this.statsRef.current; if(!el) return;
+    const run = () => {
+      const t0 = performance.now(), dur = 1500;
+      const tick = () => {
+        const k = Math.min(1, (performance.now() - t0) / dur);
+        this.setState({ mp: 1 - Math.pow(1 - k, 3) });
+        if(k < 1) this.statsRaf = requestAnimationFrame(tick);
+      };
+      tick();
+    };
+    if(!('IntersectionObserver' in window)) return run();
+    this.statsObs = new IntersectionObserver((entries) => {
+      if(entries.some(e => e.isIntersecting)){ this.statsObs.disconnect(); run(); }
+    }, { threshold: 0.4 });
+    this.statsObs.observe(el);
+  }
+
+  stepShot(e, dir){
+    const btn = e && e.currentTarget;
+    const gal = btn && btn.closest('[data-gal]');
+    if(!gal) return;
+    const shots = [...gal.querySelectorAll('[data-shot]')];
+    if(!shots.length) return;
+    const cur = shots.findIndex(s => s.style.opacity === '1');
+    const next = ((cur < 0 ? 0 : cur) + dir + shots.length) % shots.length;
+    shots.forEach((s, i) => {
+      s.style.opacity = i === next ? '1' : '0';
+      s.style.pointerEvents = i === next ? 'auto' : 'none';
+    });
+    const label = gal.querySelector('[data-count]');
+    if(label) label.textContent = (next + 1) + ' / ' + shots.length;
+  }
+
+  PROJ_NAMES = ['Amazon Scraper', 'Invoice Generator', 'Samay Store', 'Finance Tracker', 'Network Monitor', 'Reddit Data Extractor'];
+
+  goProj(i){
+    const el = this.projRef.current; if(!el) return;
+    const target = el.children[i];
+    if(target) el.scrollTo({ left: target.offsetLeft - el.offsetLeft, behavior: 'smooth' });
+    this.setState({ proj: i });
+  }
+
+  stepProj(dir){
+    const el = this.projRef.current; if(!el) return;
+    const slides = el.children.length;
+    const next = Math.max(0, Math.min(slides - 1, this.state.proj + dir));
+    const target = el.children[next];
+    if(target) el.scrollTo({ left: target.offsetLeft - el.offsetLeft, behavior: 'smooth' });
+    this.setState({ proj: next, projN: slides });
+  }
+
+  watchProj(){
+    const el = this.projRef.current; if(!el) return;
+    this.setState({ projN: el.children.length });
+    let t = null;
+    this.onProjScroll = () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        const w = el.clientWidth || 1;
+        const i = Math.round(el.scrollLeft / w);
+        if(i !== this.state.proj) this.setState({ proj: Math.max(0, Math.min(el.children.length - 1, i)) });
+      }, 90);
+    };
+    el.addEventListener('scroll', this.onProjScroll, { passive: true });
+  }
+
+  startTyping(){
+    const full = this.headline();
+    const NEAR = { a:'sqwz', b:'vgn', c:'xvd', d:'sfec', e:'wrds', f:'dgrv', g:'fhtb', h:'gjyn', i:'uok', j:'hkn', k:'jlim', l:'ko', m:'nj', n:'bmh', o:'ipl', p:'ol', q:'wa', r:'etf', s:'adw', t:'ryg', u:'yij', v:'cbf', w:'qes', x:'zcs', y:'tuh', z:'xas' };
+    const R = (a, b) => a + Math.random() * (b - a);
+    const plan = [];
+    let burst = R(0.82, 1.18);
+
+    for(let i = 0; i < full.length; i++){
+      const ch = full[i];
+      if(i > 0 && Math.random() < 0.10) burst = R(0.72, 1.35);
+
+      // occasional slip: wrong neighbouring key, caught a beat later, then fixed
+      const low = ch.toLowerCase();
+      if(NEAR[low] && i > 3 && i < full.length - 2 && Math.random() < 0.075){
+        const alts = NEAR[low];
+        let wrong = alts[Math.floor(Math.random() * alts.length)];
+        if(ch !== low) wrong = wrong.toUpperCase();
+        plan.push({ t: 'add', c: wrong, d: R(48, 104) * burst });
+        const extra = Math.random() < 0.35 ? 1 : 0;
+        if(extra) plan.push({ t: 'add', c: full[i+1] || 'e', d: R(46, 92) * burst });
+        plan.push({ t: 'wait', d: R(190, 460) });
+        for(let k = 0; k <= extra; k++) plan.push({ t: 'del', d: R(58, 112) });
+        plan.push({ t: 'wait', d: R(90, 210) });
+      }
+
+      let d = R(42, 118) * burst;
+      if(ch === ' ') d = R(58, 150) * burst;
+      if('.,'.includes(ch)) d = R(120, 230);
+      plan.push({ t: 'add', c: ch, d });
+
+      // thinking pauses at word boundaries
+      if(ch === ' ' && Math.random() < 0.22) plan.push({ t: 'wait', d: R(240, 720) });
+      if(Math.random() < 0.05) plan.push({ t: 'wait', d: R(150, 380) });
+    }
+
+    let text = '', idx = 0;
+    const step = () => {
+      if(idx >= plan.length){ this.typeTimer = null; this.setState({ done: true }); return; }
+      const a = plan[idx++];
+      if(a.t === 'add') text += a.c;
+      else if(a.t === 'del') text = text.slice(0, -1);
+      this.setState({ typed: text });
+      this.typeTimer = setTimeout(step, a.d);
+    };
+    this.typeTimer = setTimeout(step, 260);
+  }
+
+  initStars(){
+    const c = this.starRef.current; if(!c) return;
+    this.sctx = c.getContext('2d');
+    this.stars = []; this.dust = [];
+    for(let i=0; i<170; i++) this.stars.push({
+      x: Math.random(), y: Math.random(), z: 0.22 + Math.random()*0.78,
+      s: 0.5 + Math.random()*1.5, ph: Math.random()*6.283,
+      vx: (Math.random()-0.5)*0.0000075, vy: -(0.000004 + Math.random()*0.000012)
+    });
+    for(let i=0; i<22; i++) this.dust.push({
+      x: Math.random(), y: Math.random(), z: 0.3 + Math.random()*0.7,
+      s: 40 + Math.random()*150, ph: Math.random()*6.283
+    });
+    this.meteors = [];
+    this.nextMeteor = 2.5;
+    this.sizeStars();
+    const loop = () => {
+      this.starRaf = requestAnimationFrame(loop);
+      if(this.visible) this.drawStars((performance.now() - this.t0) / 1000);
+    };
+    this.starRaf = requestAnimationFrame(loop);
+  }
+
+  sizeStars(){
+    const c = this.starRef.current; if(!c) return;
+    const d = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.floor(c.clientWidth * d), h = Math.floor(c.clientHeight * d);
+    if(c.width !== w || c.height !== h){ c.width = w; c.height = h; }
+    this.sdpr = d;
+  }
+
+  drawStars(t){
+    const c = this.starRef.current, ctx = this.sctx;
+    if(!ctx || !c) return;
+    this.sizeStars();
+    const W = c.width, H = c.height, ms = t * 1000;
+    ctx.clearRect(0, 0, W, H);
+    const sc = window.scrollY || window.pageYOffset || 0;
+    ctx.globalCompositeOperation = 'lighter';
+    for(const d of this.dust){
+      let y = (d.y + ms*0.0000045*d.z - sc*0.00012*d.z) % 1; if(y < 0) y += 1;
+      const x = d.x * W, yy = y * H, r = d.s * d.z * this.sdpr;
+      const a = (0.020 + 0.016*Math.sin(ms*0.00022 + d.ph)) * d.z;
+      const g = ctx.createRadialGradient(x, yy, 0, x, yy, r);
+      g.addColorStop(0, 'rgba(255,138,66,' + a.toFixed(4) + ')');
+      g.addColorStop(1, 'rgba(255,138,66,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, yy, r, 0, 6.2832); ctx.fill();
+    }
+    for(const p of this.stars){
+      let x = (p.x + p.vx*ms) % 1; if(x < 0) x += 1;
+      let y = (p.y + p.vy*ms - sc*0.00022*p.z) % 1; if(y < 0) y += 1;
+      const tw = 0.45 + 0.55*Math.sin(ms*0.0009*(0.4 + p.z) + p.ph);
+      ctx.globalAlpha = Math.max(0, (0.10 + 0.62*p.z*p.z) * tw);
+      ctx.fillStyle = p.z > 0.82 ? '#FFE7D2' : (p.z > 0.5 ? '#EDEFF5' : '#B9C2D6');
+      const s = Math.max(1, p.s * p.z * this.sdpr);
+      ctx.fillRect(x*W, y*H, s, s);
+    }
+    if(t > this.nextMeteor){
+      this.nextMeteor = t + 3.5 + Math.random()*7.5;
+      const fromLeft = Math.random() > 0.45;
+      const ang = (fromLeft ? 0.36 : 0.62) + Math.random()*0.18;
+      this.meteors.push({
+        x: fromLeft ? -0.06 + Math.random()*0.35 : 0.55 + Math.random()*0.5,
+        y: -0.05 + Math.random()*0.35,
+        dx: (fromLeft ? 1 : -1) * Math.cos(ang), dy: Math.sin(ang),
+        life: 0, dur: 0.85 + Math.random()*0.75,
+        len: 0.10 + Math.random()*0.16,
+        w: 1.0 + Math.random()*1.6,
+        warm: Math.random() > 0.6
+      });
+    }
+    for(let i = this.meteors.length - 1; i >= 0; i--){
+      const m = this.meteors[i];
+      m.life += 1/60;
+      const k = m.life / m.dur;
+      if(k >= 1){ this.meteors.splice(i, 1); continue; }
+      const travel = 1.35 * k;
+      const hx = (m.x + m.dx*travel) * W, hy = (m.y + m.dy*travel) * H;
+      const L = m.len * Math.max(W, H);
+      const tx = hx - m.dx*L, ty = hy - m.dy*L;
+      const fade = Math.sin(Math.min(1, k)*3.14159);
+      const grad = ctx.createLinearGradient(tx, ty, hx, hy);
+      const core = m.warm ? '255,226,190' : '226,238,255';
+      grad.addColorStop(0, 'rgba(' + core + ',0)');
+      grad.addColorStop(0.62, 'rgba(' + core + ',' + (0.16*fade).toFixed(3) + ')');
+      grad.addColorStop(1, 'rgba(255,255,255,' + (0.85*fade).toFixed(3) + ')');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = m.w * this.sdpr;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(hx, hy); ctx.stroke();
+      const gg = ctx.createRadialGradient(hx, hy, 0, hx, hy, 9*this.sdpr*m.w);
+      gg.addColorStop(0, 'rgba(255,252,246,' + (0.75*fade).toFixed(3) + ')');
+      gg.addColorStop(1, 'rgba(255,240,220,0)');
+      ctx.fillStyle = gg;
+      ctx.beginPath(); ctx.arc(hx, hy, 9*this.sdpr*m.w, 0, 6.2832); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  quality(){
+    let q = this.props.quality || 'balanced';
+    if(!this.props.quality){
+      const small = Math.min(window.innerWidth, window.innerHeight) < 820;
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      const lean = (navigator.hardwareConcurrency || 8) <= 4;
+      if((small && coarse) || lean) q = 'low';
+    }
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) q = 'low';
+    if(q === 'low') return { scale: Math.min(window.devicePixelRatio || 1, 1.4) * 0.5, steps: 132, bloom: false };
+    if(q === 'high') return { scale: Math.min(window.devicePixelRatio || 1, 2) * 0.9, steps: 330, bloom: true };
+    return { scale: Math.min(window.devicePixelRatio || 1, 1.6) * 0.74, steps: 230, bloom: true };
+  }
+
+  componentDidMount(){
+    this.initStars();
+    setTimeout(() => this.startTyping(), 420);
+    this.startPlaceholders();
+    this.watchProj();
+    this.watchStats();
+    const cv = this.canvasRef.current; if(!cv) return;
+    const gl = cv.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true });
+    if(!gl){ this.fallback(); return; }
+    this.gl = gl;
+    this.floatOK = !!gl.getExtension('EXT_color_buffer_float');
+    gl.getExtension('OES_texture_float_linear');
+
+    const quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    this.quad = quad;
+
+    this.pMain = this.program(VERT, FRAG);
+    if(!this.pMain){ this.fallback(); return; }
+    this.useBloom = this.floatOK && this.quality().bloom;
+    if(this.useBloom){
+      this.pBlur = this.program(VERT, BLUR);
+      this.pComp = this.program(VERT, COMP);
+      if(!this.pBlur || !this.pComp) this.useBloom = false;
+    }
+
+    this.onResize = () => this.resize();
+    this.orbit = { x: 0, y: 0 };
+    this.drag = { on: false, x: 0, y: 0 };
+    this.onMove = (e) => {
+      const r = cv.getBoundingClientRect();
+      this.mouse.tx = ((e.clientX - r.left) / r.width) * 2 - 1;
+      this.mouse.ty = ((e.clientY - r.top) / r.height) * 2 - 1;
+      if(this.drag.on){
+        this.orbit.x += (e.clientX - this.drag.x) * 0.0055;
+        this.orbit.y = Math.max(-0.30, Math.min(0.34, this.orbit.y + (e.clientY - this.drag.y) * 0.0016));
+        this.drag.x = e.clientX; this.drag.y = e.clientY;
+      }
+    };
+    this.onDown = (e) => { this.drag.on = true; this.drag.x = e.clientX; this.drag.y = e.clientY; cv.style.cursor = 'grabbing'; };
+    this.onUp = () => { this.drag.on = false; cv.style.cursor = 'grab'; };
+    cv.style.cursor = 'grab';
+    cv.style.touchAction = 'pan-y';
+    cv.addEventListener('pointerdown', this.onDown);
+    window.addEventListener('pointerup', this.onUp);
+    window.addEventListener('pointercancel', this.onUp);
+    this.onScroll = () => {
+      const h = window.innerHeight || 800;
+      this.fallT = Math.max(0, Math.min(1, (window.scrollY || window.pageYOffset || 0) / (h * 0.95)));
+    };
+    this.onVis = () => { this.visible = document.visibilityState !== 'hidden'; };
+
+    window.addEventListener('resize', this.onResize);
+    window.addEventListener('pointermove', this.onMove, { passive: true });
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    document.addEventListener('visibilitychange', this.onVis);
+    this.resize(); this.onScroll();
+    this.raf = requestAnimationFrame(this.frame);
+  }
+
+  componentWillUnmount(){
+    cancelAnimationFrame(this.raf);
+    cancelAnimationFrame(this.starRaf);
+    cancelAnimationFrame(this.statsRaf);
+    if(this.statsObs) this.statsObs.disconnect();
+    this.stopped = true;
+    if(this.typeTimer) clearTimeout(this.typeTimer);
+    Object.values(this.phT || {}).forEach(clearTimeout);
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+    window.removeEventListener('pointercancel', this.onUp);
+    window.removeEventListener('scroll', this.onScroll);
+    document.removeEventListener('visibilitychange', this.onVis);
+  }
+
+  fallback(){
+    const cv = this.canvasRef.current;
+    if(cv && cv.parentElement) cv.parentElement.style.background = 'radial-gradient(58% 48% at 50% 46%, rgba(255,140,60,.30), rgba(120,26,6,.22) 34%, rgba(3,3,4,1) 68%)';
+  }
+
+  shader(type, src){
+    const gl = this.gl, s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); return null; }
+    return s;
+  }
+
+  program(vs, fs){
+    const gl = this.gl;
+    const a = this.shader(gl.VERTEX_SHADER, vs), b = this.shader(gl.FRAGMENT_SHADER, fs);
+    if(!a || !b) return null;
+    const p = gl.createProgram();
+    gl.attachShader(p, a); gl.attachShader(p, b);
+    gl.bindAttribLocation(p, 0, 'aPos');
+    gl.linkProgram(p);
+    if(!gl.getProgramParameter(p, gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(p)); return null; }
+    const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+    for(let i=0;i<n;i++){ const info = gl.getActiveUniform(p, i); u[info.name] = gl.getUniformLocation(p, info.name); }
+    return { p, u };
+  }
+
+  target(w, h, float){
+    const gl = this.gl;
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, float ? gl.RGBA16F : gl.RGBA8, w, h, 0, gl.RGBA, float ? gl.HALF_FLOAT : gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { tex, fb, w, h };
+  }
+
+  resize(){
+    const gl = this.gl, cv = this.canvasRef.current; if(!gl || !cv) return;
+    const q = this.quality();
+    const w = Math.max(2, Math.floor(cv.clientWidth * q.scale));
+    const h = Math.max(2, Math.floor(cv.clientHeight * q.scale));
+    if(w === this.W && h === this.H) return;
+    this.W = w; this.H = h; cv.width = w; cv.height = h;
+    if(this.useBloom){
+      [this.rtScene, this.rtA, this.rtB].forEach(t => { if(t){ gl.deleteTexture(t.tex); gl.deleteFramebuffer(t.fb); } });
+      this.rtScene = this.target(w, h, true);
+      const bw = Math.max(2, w >> 2), bh = Math.max(2, h >> 2);
+      this.rtA = this.target(bw, bh, true);
+      this.rtB = this.target(bw, bh, true);
+    }
+  }
+
+  bindQuad(prog){
+    const gl = this.gl;
+    gl.useProgram(prog.p);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.quad);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  hex(h, fb){
+    const s = (h || fb || '#FF6A1F').replace('#','');
+    const v = s.length === 3 ? s.split('').map(c => c+c).join('') : s;
+    const n = parseInt(v, 16);
+    if(isNaN(n)) return [1, 0.42, 0.12];
+    return [((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255];
+  }
+
+  frame = () => {
+    this.raf = requestAnimationFrame(this.frame);
+    const gl = this.gl, cv = this.canvasRef.current;
+    if(!gl || !cv || !this.visible) return;
+    this.resize();
+
+    const t = (performance.now() - this.t0) / 1000;
+    const m = this.mouse;
+    m.x += (m.tx - m.x) * 0.045;
+    m.y += (m.ty - m.y) * 0.045;
+    this.fall += (this.fallT - this.fall) * 0.055;
+    const f = this.fall;
+    const fe = f * f * (3 - 2 * f);
+
+    const ob = this.orbit || { x: 0, y: 0 };
+    const yaw = t * 0.036 + m.x * 0.34 + ob.x + 0.014 * Math.sin(t * 0.31);
+    const pitch = 0.105 + 0.17 * fe - m.y * 0.10 + ob.y + 0.010 * Math.sin(t * 0.23);
+    const dist = 52.0 - 33.0 * fe;
+    const ar = this.W / Math.max(1, this.H);
+    const wide = ar > 1.25;
+    const shx = wide ? -(0.13 + 0.05 * (1 - fe)) : 0;
+    const shy = wide ? -(0.10 + 0.04 * (1 - fe)) : -0.07;
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const cx = dist * cp * Math.cos(yaw), cy = dist * sp, cz = dist * cp * Math.sin(yaw);
+
+    let fx = -cx, fy = -cy, fz = -cz;
+    const fl = Math.hypot(fx, fy, fz); fx/=fl; fy/=fl; fz/=fl;
+    let rx = fz * 1 - 0, ry = 0, rz = -fx;
+    const rl = Math.hypot(rx, ry, rz) || 1; rx/=rl; ry/=rl; rz/=rl;
+    const ux = ry*fz - rz*fy, uy = rz*fx - rx*fz, uz = rx*fy - ry*fx;
+    const fov = (42 + 17 * fe) * Math.PI / 180;
+    const focal = 1 / Math.tan(fov / 2);
+
+    const q = this.quality();
+    const tint = this.hex(this.props.diskColor, '#FF6A1F');
+    const lum = 0.299*tint[0] + 0.587*tint[1] + 0.114*tint[2] || 1;
+    const T = [tint[0]/lum, tint[1]/lum, tint[2]/lum];
+    const inten = (this.props.intensity ?? 1) * (1 + 0.35 * fe);
+
+    const ov = this.overlayRef.current;
+    if(ov){ ov.style.opacity = String(Math.max(0, 1 - f * 1.9)); ov.style.transform = 'translateY(' + (-f * 60).toFixed(1) + 'px)'; }
+
+    const drawTo = (rt) => {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, rt ? rt.fb : null);
+      gl.viewport(0, 0, rt ? rt.w : this.W, rt ? rt.h : this.H);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+
+    const P = this.pMain;
+    this.bindQuad(P);
+    gl.uniform2f(P.u.uRes, this.W, this.H);
+    gl.uniform1f(P.u.uTime, t);
+    gl.uniform3f(P.u.uCam, cx, cy, cz);
+    gl.uniformMatrix3fv(P.u.uMat, false, new Float32Array([rx, ry, rz, ux, uy, uz, fx, fy, fz]));
+    gl.uniform1f(P.u.uFocal, focal);
+    gl.uniform2f(P.u.uShift, shx * (1 - fe * 0.6), shy * (1 - fe * 0.6));
+    gl.uniform1f(P.u.uFall, f);
+    gl.uniform1f(P.u.uInt, inten);
+    gl.uniform1f(P.u.uSpin, this.props.spinSpeed ?? 1);
+    gl.uniform3f(P.u.uTint, T[0], T[1], T[2]);
+    gl.uniform1i(P.u.uSteps, q.steps);
+    gl.uniform1f(P.u.uDirect, this.useBloom ? 0 : 1);
+    drawTo(this.useBloom ? this.rtScene : null);
+
+    if(!this.useBloom) return;
+
+    const B = this.pBlur;
+    this.bindQuad(B);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.rtScene.tex);
+    gl.uniform1i(B.u.uTex, 0);
+    gl.uniform2f(B.u.uTexel, 1/this.rtA.w, 1/this.rtA.h);
+    gl.uniform2f(B.u.uDir, 1, 0);
+    gl.uniform1f(B.u.uBright, 1);
+    drawTo(this.rtA);
+
+    gl.bindTexture(gl.TEXTURE_2D, this.rtA.tex);
+    gl.uniform2f(B.u.uDir, 0, 1);
+    gl.uniform1f(B.u.uBright, 0);
+    drawTo(this.rtB);
+
+    gl.bindTexture(gl.TEXTURE_2D, this.rtB.tex);
+    gl.uniform2f(B.u.uDir, 1.7, 0);
+    drawTo(this.rtA);
+
+    const C = this.pComp;
+    this.bindQuad(C);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.rtScene.tex); gl.uniform1i(C.u.uScene, 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.rtA.tex); gl.uniform1i(C.u.uBloom, 1);
+    gl.uniform2f(C.u.uRes, this.W, this.H);
+    gl.uniform1f(C.u.uTime, t);
+    gl.uniform1f(C.u.uFall, f);
+    drawTo(null);
+  }
+}
+</script>
+</body>
+</html>

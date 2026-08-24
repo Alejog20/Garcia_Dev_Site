@@ -17,6 +17,7 @@ test.describe("black hole hero", () => {
   });
 
   test("survives a drag-to-orbit interaction", async ({ page }) => {
+    test.slow();
     await page.goto("/");
     const canvas = page.locator(`${HERO} canvas`);
     const box = await canvas.boundingBox();

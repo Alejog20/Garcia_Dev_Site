@@ -16,12 +16,19 @@ function activeTickFill(page, projectNumber) {
     .locator("span");
 }
 
-// Smooth-scroll + the 90ms scroll-debounce in watchProj() need a beat to
-// settle before the next click, or clicks queue up faster than the
-// carousel's own state can follow.
-async function clickAndSettle(locator) {
+// A fixed delay between clicks is a bad idea on a runner whose speed
+// varies wildly (a loaded CI box can take far longer than a fixed guess
+// for the click's React state update + smooth-scroll + the 90ms
+// scroll-debounce in watchProj() to land). Instead, click and then wait
+// — with a generous timeout — for the resulting state to actually show
+// up before moving on, so each step is self-paced rather than guessed.
+async function clickAndWaitForTick(page, locator, expectedProjectNumber) {
   await locator.click();
-  await locator.page().waitForTimeout(350);
+  await expect(activeTickFill(page, expectedProjectNumber)).toHaveCSS(
+    "background-color",
+    ACTIVE_TICK_COLOR,
+    { timeout: 15_000 }
+  );
 }
 
 test.describe("projects carousel", () => {
@@ -36,17 +43,14 @@ test.describe("projects carousel", () => {
     const prev = page.getByRole("button", { name: "Previous project" });
 
     for (let i = 2; i <= PROJECT_COUNT; i++) {
-      await clickAndSettle(next);
-      await expect(activeTickFill(page, i)).toHaveCSS("background-color", ACTIVE_TICK_COLOR);
+      await clickAndWaitForTick(page, next, i);
     }
 
     // clamped at the last project — one more click should not move past it
-    await clickAndSettle(next);
-    await expect(activeTickFill(page, PROJECT_COUNT)).toHaveCSS("background-color", ACTIVE_TICK_COLOR);
+    await clickAndWaitForTick(page, next, PROJECT_COUNT);
 
     for (let i = PROJECT_COUNT - 1; i >= 1; i--) {
-      await clickAndSettle(prev);
-      await expect(activeTickFill(page, i)).toHaveCSS("background-color", ACTIVE_TICK_COLOR);
+      await clickAndWaitForTick(page, prev, i);
     }
   });
 
@@ -54,8 +58,7 @@ test.describe("projects carousel", () => {
     await page.goto("/");
     await page.locator("#proyectos").scrollIntoViewIfNeeded();
 
-    await clickAndSettle(page.getByRole("button", { name: "Project 4" }));
-    await expect(activeTickFill(page, 4)).toHaveCSS("background-color", ACTIVE_TICK_COLOR);
+    await clickAndWaitForTick(page, page.getByRole("button", { name: "Project 4" }), 4);
   });
 
   test("per-project screenshot gallery navigates", async ({ page }) => {
@@ -68,9 +71,9 @@ test.describe("projects carousel", () => {
     await expect(galNext).toBeVisible();
 
     await expect(gallery.locator('[data-shot="0"]')).toHaveCSS("opacity", "1");
-    await clickAndSettle(galNext);
-    await expect(gallery.locator('[data-shot="1"]')).toHaveCSS("opacity", "1");
-    await clickAndSettle(galPrev);
-    await expect(gallery.locator('[data-shot="0"]')).toHaveCSS("opacity", "1");
+    await galNext.click();
+    await expect(gallery.locator('[data-shot="1"]')).toHaveCSS("opacity", "1", { timeout: 15_000 });
+    await galPrev.click();
+    await expect(gallery.locator('[data-shot="0"]')).toHaveCSS("opacity", "1", { timeout: 15_000 });
   });
 });

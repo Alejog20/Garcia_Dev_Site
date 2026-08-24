@@ -11,7 +11,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // The CI runner is a shared box with no GPU; the browser process itself
+  // has been observed crashing and needing relaunch mid-run under load.
+  // More headroom to ride that out than a local machine ever needs.
+  retries: process.env.CI ? 2 : 0,
   // CI runners have no GPU — headless Chromium falls back to software WebGL,
   // and the hero's default 'balanced' shader tier (230 ray-march steps) is
   // expensive enough there that the browser stops responding to Playwright's
@@ -23,6 +26,10 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${PORT}`,
     trace: "on-first-retry",
     reducedMotion: "reduce",
+    // Smaller viewport = fewer pixels the hero shader has to ray-march
+    // every frame. Cuts the background cost that every test pays for
+    // just having the page open, not only the carousel tests.
+    viewport: { width: 800, height: 600 },
   },
   webServer: {
     // Not python3 -m http.server: that doesn't send vercel.json's headers,
@@ -38,6 +45,10 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
+        // Headless runs default to the stripped-down "headless shell"
+        // binary, which has weaker GPU/WebGL support than full Chromium.
+        // Force the full browser in CI, where that gap actually matters.
+        channel: process.env.CI ? "chromium" : undefined,
         launchOptions: {
           // GitHub Actions runners have no GPU. Recent Chrome versions no
           // longer fall back to SwiftShader (software WebGL) automatically

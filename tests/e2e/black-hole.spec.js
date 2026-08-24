@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.js";
 
 const HERO = 'section[data-screen-label="Hero — black hole"]';
 

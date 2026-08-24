@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.js";
 
 const PROJECT_COUNT = 6;
 const ACTIVE_TICK_COLOR = "rgb(255, 106, 31)"; // #FF6A1F

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.js";
 
 test.describe("contact form", () => {
   test("accepts typed input in name, email and message", async ({ page }) => {

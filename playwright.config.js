@@ -12,10 +12,17 @@ export default defineConfig({
   workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // CI runners have no GPU — headless Chromium falls back to software WebGL,
+  // and the hero's default 'balanced' shader tier (230 ray-march steps) is
+  // expensive enough there that the browser stops responding to Playwright's
+  // own commands. The app already ships a cheap 'low' tier that kicks in
+  // under prefers-reduced-motion: reduce (quality() in index.html) — use it.
+  timeout: process.env.CI ? 60_000 : 30_000,
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
     trace: "on-first-retry",
+    reducedMotion: "reduce",
   },
   webServer: {
     // Not python3 -m http.server: that doesn't send vercel.json's headers,

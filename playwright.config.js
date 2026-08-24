@@ -18,7 +18,10 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: `python3 -m http.server ${PORT}`,
+    // Not python3 -m http.server: that doesn't send vercel.json's headers,
+    // so a CSP regression (e.g. a blocked inline script) would pass here
+    // and only break in production. This serves the same headers Vercel does.
+    command: `node scripts/static-server.mjs ${PORT}`,
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

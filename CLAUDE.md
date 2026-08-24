@@ -72,9 +72,15 @@ Inter or Roboto, any framework's default component styling.
 ### Files
 
 ```
-Black Hole Hero.dc.html   The entire site — markup, styles, logic
+index.html                The entire site — markup, styles, logic. Renamed from
+                           "Black Hole Hero.dc.html" so Vercel serves it as the root.
 support.js                Runtime for the component format. Never edit
 image-slot.js             Custom element for drag-and-drop screenshot slots
+vercel.json                Security headers (CSP, etc). No build config — stays zero-build
+vendor/                    Locally hosted React/ReactDOM UMD, wired in via support.js's
+                           window.__resources override. Removes the unpkg.com runtime
+                           dependency without editing support.js.
+assets/                    Repo-local profile image, CV, favicons, OG image, fonts
 ```
 
 ### Stack

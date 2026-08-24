@@ -34,6 +34,21 @@ export default defineConfig({
     timeout: 30_000,
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: {
+          // GitHub Actions runners have no GPU. Recent Chrome versions no
+          // longer fall back to SwiftShader (software WebGL) automatically
+          // in that case — without opting in explicitly, GPU-process init
+          // hangs/crash-loops instead of failing fast, which is what was
+          // timing out every test here regardless of shader cost.
+          args: process.env.CI
+            ? ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
+            : [],
+        },
+      },
+    },
   ],
 });

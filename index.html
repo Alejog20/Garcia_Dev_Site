@@ -35,6 +35,7 @@
     [data-shot-nav] button { width: 34px !important; height: 34px !important }
     [data-proj-stack] { display: none }
     [data-proj-panel] { padding-left: 20px !important }
+    [data-cli-term] { font-size: 10.5px !important; padding: 12px !important }
   }
   @media (max-width: 460px) {
     [data-hero-h1] { min-height: 4.6em !important }
@@ -231,19 +232,22 @@
                 </table>
 
                 <sc-if value="{{ p.hasCli }}">
-                  <div style="overflow-x:auto;background:#0B0B0C;border-top:1px solid rgba(242,239,234,.14);border-bottom:1px solid rgba(242,239,234,.14);padding:16px 18px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.5">
-                    <div ref="{{ p.cliRef }}" tabindex="0" role="button" aria-label="Run: {{ p.cliCmd }}" onClick="{{ p.cliRunHandler }}" onKeyDown="{{ p.cliKeyDown }}" style-focus-visible="outline:1px dashed #FF6A1F;outline-offset:3px" style="outline:none;cursor:pointer">
-                      <span style="color:#F2EFEA">$ {{ p.cliCmd }}</span><sc-if value="{{ p.cliShowPrompt }}"><span style="display:inline-block;width:.55em;height:1em;margin-left:.1em;background:#FF6A1F;vertical-align:-2px;animation:omCaret 1.05s steps(1) infinite"></span></sc-if>
-                      <sc-if value="{{ p.cliShowPrompt }}">
-                        <div style="margin-top:6px;color:#6E6862;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase">Press enter to run</div>
+                  <div style="position:relative;margin-bottom:24px">
+                    <div data-cli-term="true" style="overflow-x:auto;background:#0B0B0C;border-top:1px solid rgba(242,239,234,.14);border-bottom:1px solid rgba(242,239,234,.14);padding:16px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.5">
+                      <div ref="{{ p.cliRef }}" tabindex="0" role="button" aria-label="Run: {{ p.cliCmd }}" onClick="{{ p.cliRunHandler }}" onKeyDown="{{ p.cliKeyDown }}" style-focus-visible="outline:1px dashed #FF6A1F;outline-offset:3px" style="outline:none;cursor:pointer">
+                        <span style="color:#F2EFEA">$ {{ p.cliCmd }}</span><sc-if value="{{ p.cliShowPrompt }}"><span style="display:inline-block;width:.55em;height:1em;margin-left:.1em;background:#FF6A1F;vertical-align:-2px;animation:omCaret 1.05s steps(1) infinite"></span></sc-if>
+                        <sc-if value="{{ p.cliShowPrompt }}">
+                          <div style="margin-top:6px;color:#6E6862;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase">Press enter to run</div>
+                        </sc-if>
+                      </div>
+                      <sc-if value="{{ p.cliShowRunning }}">
+                        <div style="margin-top:2px;color:#6E6862;animation:omPulse 1s ease-in-out infinite">Running…</div>
+                      </sc-if>
+                      <sc-if value="{{ p.cliShowOut }}">
+                        <div style="margin-top:2px;color:#8E8880;white-space:pre">{{ p.cliOutText }}</div>
                       </sc-if>
                     </div>
-                    <sc-if value="{{ p.cliShowRunning }}">
-                      <div style="margin-top:2px;color:#6E6862;animation:omPulse 1s ease-in-out infinite">Running…</div>
-                    </sc-if>
-                    <sc-if value="{{ p.cliShowOut }}">
-                      <div style="margin-top:2px;color:#8E8880;white-space:pre">{{ p.cliOutText }}</div>
-                    </sc-if>
+                    <div aria-hidden="true" style="position:absolute;top:1px;bottom:1px;right:0;width:26px;background:linear-gradient(to right, rgba(11,11,12,0), #0B0B0C 78%);pointer-events:none"></div>
                   </div>
                 </sc-if>
 

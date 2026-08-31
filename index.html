@@ -33,7 +33,8 @@
     p, [data-just] { text-align: left !important; hyphens: manual !important }
     [data-hero-h1] { min-height: 3.4em !important }
     [data-shot-nav] button { width: 34px !important; height: 34px !important }
-    [data-proj-nav] button { width: 46px !important; height: 46px !important }
+    [data-proj-stack] { display: none }
+    [data-proj-panel] { padding-left: 20px !important }
   }
   @media (max-width: 460px) {
     [data-hero-h1] { min-height: 4.6em !important }
@@ -70,7 +71,6 @@
   @keyframes omAurora { 0%,100% { opacity: .34; transform: scale(1) } 28% { opacity: .95; transform: scale(1.05) } 55% { opacity: .48; transform: scale(.98) } 78% { opacity: .82; transform: scale(1.03) } }
   @keyframes omSurface { from { background-position: 0% 0%, 0% 0%, 0% 0% } to { background-position: -200% 0%, -300% 0%, -140% 0% } }
   input::placeholder, textarea::placeholder { color: #5F5A55; opacity: 1 }
-  [data-carousel]::-webkit-scrollbar { display: none }
 </style>
 <script src="./image-slot.js"></script>
 </helmet>
@@ -169,221 +169,85 @@
         <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;color:#FF8C4A">02</span>
         <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6E6862">Selected work</span>
         <div style="flex:1;height:1px;background:rgba(242,239,234,.10)"></div>
-        <div data-proj-nav="true" style="display:flex;align-items:center;gap:14px">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:#A8A29A;min-width:58px;text-align:right">{{ projLabel }}</span>
-          <button type="button" onClick="{{ prevProj }}" aria-label="Previous project" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(242,239,234,.22);color:#F2EFEA;font-size:15px;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
-          <button type="button" onClick="{{ nextProj }}" aria-label="Next project" style="width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(242,239,234,.22);color:#F2EFEA;font-size:15px;cursor:pointer;transition:border-color .18s,color .18s" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
-        </div>
       </div>
 
-      <div ref="{{ projRef }}" data-carousel="projects" style="display:flex;gap:clamp(28px,4vw,56px);overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;padding-bottom:6px">
-
-        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
-          <div style="position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
-            <div data-gal="0" style="position:absolute;inset:0">
-            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
-              <image-slot id="amazon-1" shape="rect" placeholder="Terminal output of the scraper"></image-slot>
-            </div>
-            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="amazon-2" shape="rect" placeholder="A run in progress"></image-slot>
-            </div>
-            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="amazon-3" shape="rect" placeholder="The cleaned dataset"></image-slot>
-            </div>
-            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
-              <span data-count="0" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
-              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="0" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
-              <button type="button" onClick="{{ shotNext }}" data-gal-next="0" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
-            </div>
-          </div>
-          </div>
+      <div ref="{{ projStatsRef }}">
+        <sc-for list="{{ projectRows }}" as="p" hint-placeholder-count="6">
           <div>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">01</span>
-            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em">Amazon Scraper</h3>
-            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">Pulls prices, titles and product metrics from Amazon — and keeps working when the site pushes back. Session rotation, retries and careful error handling so the data lands clean on every run.</p>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Requests</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">BeautifulSoup4</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Selenium</span>
-            </div>
-            <a href="https://github.com/Alejog20/Ethical_amazon_scraper" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
-          </div>
-        </article>
-
-        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
-          <div style="order:2;position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
-            <div data-gal="1" style="position:absolute;inset:0">
-            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
-              <image-slot id="invoice-1" shape="rect" placeholder="A generated PDF invoice"></image-slot>
-            </div>
-            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="invoice-2" shape="rect" placeholder="The source spreadsheet"></image-slot>
-            </div>
-            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="invoice-3" shape="rect" placeholder="The command running"></image-slot>
-            </div>
-            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
-              <span data-count="1" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
-              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="1" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
-              <button type="button" onClick="{{ shotNext }}" data-gal-next="1" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
-            </div>
-          </div>
-          </div>
-          <div style="order:1">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">02</span>
-            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em;text-align:right">Invoice Generator</h3>
-            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">One command turns a spreadsheet into individual PDF invoices. A row per client goes in, a formatted invoice with charges and totals comes out — an afternoon of manual billing becomes a few seconds.</p>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Openpyxl</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">PDF</span>
-            </div>
-            <a href="https://github.com/Alejog20/Invoice_generator_from_xlsx" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
-          </div>
-        </article>
-
-        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
-          <div style="position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
-            <div data-gal="2" style="position:absolute;inset:0">
-            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
-              <image-slot id="samay-1" shape="rect" placeholder="Samay homepage"></image-slot>
-            </div>
-            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="samay-2" shape="rect" placeholder="Product detail"></image-slot>
-            </div>
-            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="samay-3" shape="rect" placeholder="Admin panel"></image-slot>
-            </div>
-            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
-              <span data-count="2" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
-              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="2" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
-              <button type="button" onClick="{{ shotNext }}" data-gal-next="2" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
-            </div>
-          </div>
-          </div>
-          <div>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">03</span>
-            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em">Samay</h3>
-            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">An e-commerce platform built to connect indigenous communities with digital markets. Authentication, admin panel, Java backend validation and a SQL database — the closing project of the Generation Full Stack Java bootcamp.</p>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Java</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">SpringBoot</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">SQL</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Vanilla JS</span>
-            </div>
-            <a href="https://github.com/jorgeramirez2018/Proyecto-Samay" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
-          </div>
-        </article>
-
-        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
-          <div style="order:2;position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
-            <div data-gal="3" style="position:absolute;inset:0">
-            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
-              <image-slot id="finance-1" shape="rect" placeholder="The dashboard"></image-slot>
-            </div>
-            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="finance-2" shape="rect" placeholder="Monthly trends view"></image-slot>
-            </div>
-            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="finance-3" shape="rect" placeholder="Category breakdown"></image-slot>
-            </div>
-            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
-              <span data-count="3" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
-              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="3" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
-              <button type="button" onClick="{{ shotNext }}" data-gal-next="3" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
-            </div>
-          </div>
-          </div>
-          <div style="order:1">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">04</span>
-            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em;text-align:right">Finance Tracker</h3>
-            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">Drop in a Bancolombia statement and get a dashboard: expenses, income, monthly trends. No configuration, no spreadsheet gymnastics — just the picture of where the money went.</p>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Pandas</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Streamlit</span>
-            </div>
-            <a href="https://github.com/Alejog20/Finance_tracker" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
-          </div>
-        </article>
-
-        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
-          <div style="position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
-            <div data-gal="4" style="position:absolute;inset:0">
-            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
-              <image-slot id="network-1" shape="rect" placeholder="Console output"></image-slot>
-            </div>
-            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="network-2" shape="rect" placeholder="Open-port report"></image-slot>
-            </div>
-            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="network-3" shape="rect" placeholder="Live connections"></image-slot>
-            </div>
-            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
-              <span data-count="4" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
-              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="4" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
-              <button type="button" onClick="{{ shotNext }}" data-gal-next="4" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
-            </div>
-          </div>
-          </div>
-          <div>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">05</span>
-            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em">Network Traffic Analyzer</h3>
-            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">Reports open ports, live connections and packet metrics straight from the console. Pure Python, no heavy dependencies — the kind of tool you reach for during a quick security audit.</p>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Sockets</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Networking</span>
-            </div>
-            <a href="https://github.com/Alejog20/Network_traffic_analysis" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
-          </div>
-        </article>
-
-        <article style="flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(28px,4vw,64px);align-items:center">
-          <div style="order:2;position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
-            <div data-gal="5" style="position:absolute;inset:0">
-            <div data-shot="0" style="position:absolute;inset:0;opacity:1;pointer-events:auto;transition:opacity .3s ease">
-              <image-slot id="reddit-1" shape="rect" placeholder="Sentiment results"></image-slot>
-            </div>
-            <div data-shot="1" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="reddit-2" shape="rect" placeholder="The extraction run"></image-slot>
-            </div>
-            <div data-shot="2" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .3s ease">
-              <image-slot id="reddit-3" shape="rect" placeholder="The output data"></image-slot>
-            </div>
-            <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
-              <span data-count="5" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
-              <button type="button" onClick="{{ shotPrev }}" data-gal-prev="5" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
-              <button type="button" onClick="{{ shotNext }}" data-gal-next="5" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
-            </div>
-          </div>
-          </div>
-          <div style="order:1">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">06</span>
-            <h3 style="margin:14px 0 16px;font-size:clamp(24px,2.4vw,34px);line-height:1.12;font-weight:500;letter-spacing:-.02em;text-align:right">Reddit Data Extractor</h3>
-            <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#8E8880;text-align:justify;hyphens:auto;text-wrap:pretty">Collects posts, comments and community metrics through the official Reddit API, always inside the rate limits. The output feeds sentiment analysis and opinion mining pipelines.</p>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px">
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Python</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">Reddit API</span>
-              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;padding:6px 11px;border:1px solid rgba(242,239,234,.14);color:#A8A29A">NLP</span>
-            </div>
-            <a href="https://github.com/Alejog20/Reddit_API_Data_extraction" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
-          </div>
-        </article>
-
-      </div>
-
-      <div style="display:flex;align-items:center;gap:18px;margin-top:30px">
-        <div style="display:flex;gap:4px;flex:1">
-          <sc-for list="{{ projTicks }}" as="tick" hint-placeholder-count="6">
-            <button type="button" onClick="{{ tick.go }}" aria-label="{{ tick.label }}" style="flex:1;height:26px;padding:0;background:transparent;border:0;cursor:pointer;display:flex;align-items:flex-end">
-              <span style="display:block;width:100%;height:{{ tick.h }};background:{{ tick.bg }};transition:height .3s ease, background .3s ease"></span>
+            <button type="button" onClick="{{ p.toggle }}" aria-expanded="{{ p.ariaExpanded }}" style-focus-visible="outline:1px solid #FF6A1F;outline-offset:-2px" style="width:100%;display:grid;grid-template-columns:44px 1fr auto 20px;align-items:center;gap:20px;padding:22px 4px;margin:0;background:transparent;border:0;border-top:1px solid rgba(242,239,234,.12);color:inherit;font-family:inherit;text-align:left;cursor:pointer">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:#6E6862">{{ p.idx }}</span>
+              <span>
+                <span style="display:block;font-size:clamp(19px,2vw,25px);line-height:1.2;font-weight:500;letter-spacing:-.015em;color:#F2EFEA">{{ p.name }}</span>
+                <span style="display:block;margin-top:5px;font-size:14px;line-height:1.5;color:#8E8880">{{ p.pitch }}</span>
+              </span>
+              <span data-proj-stack="true" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:#6E6862;white-space:nowrap">{{ p.stack }}</span>
+              <span style="display:block;font-size:17px;line-height:1;color:#6E6862;text-align:center;transform:rotate({{ p.chevDeg }});transition:transform .25s ease">+</span>
             </button>
-          </sc-for>
-        </div>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6E6862;white-space:nowrap">{{ projName }}</span>
+
+            <div style="max-height:{{ p.panelH }};overflow:hidden;transition:max-height .32s ease">
+              <div data-proj-panel="true" style="padding:6px 4px 36px 64px">
+
+                <sc-if value="{{ p.hasGallery }}">
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(24px,3.5vw,48px);align-items:start;margin-bottom:24px">
+                    <div style="position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
+                      <div data-gal="{{ p.galId }}" style="position:absolute;inset:0">
+                        <sc-for list="{{ p.shots }}" as="shot" hint-placeholder-count="3">
+                          <div data-shot="{{ shot.idx }}" style="position:absolute;inset:0;opacity:{{ shot.op }};pointer-events:{{ shot.pe }};transition:opacity .3s ease">
+                            <image-slot id="{{ shot.id }}" shape="rect" placeholder="{{ shot.placeholder }}"></image-slot>
+                          </div>
+                        </sc-for>
+                        <div data-shot-nav="true" style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:8px;z-index:3">
+                          <span data-count="{{ p.galId }}" style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:#A8A29A;background:rgba(6,6,8,.72);padding:5px 8px">1 / 3</span>
+                          <button type="button" onClick="{{ shotPrev }}" data-gal-prev="{{ p.galId }}" aria-label="Previous screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">←</button>
+                          <button type="button" onClick="{{ shotNext }}" data-gal-next="{{ p.galId }}" aria-label="Next screenshot" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(6,6,8,.72);border:1px solid rgba(242,239,234,.2);color:#F2EFEA;font-size:12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">→</button>
+                        </div>
+                      </div>
+                    </div>
+                    <sc-if value="{{ p.isCaseStudy }}">
+                      <p style="margin:0;font-size:15px;line-height:1.65;color:#A8A29A;text-align:justify;hyphens:auto;text-wrap:pretty">{{ p.narrative }}</p>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <table style="width:100%;border-collapse:collapse;margin-bottom:22px">
+                  <tbody>
+                    <tr style="border-top:1px solid rgba(242,239,234,.10)">
+                      <td style="padding:10px 14px 10px 0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#6E6862;white-space:nowrap;width:100px;vertical-align:top">STATUS</td>
+                      <td style="padding:10px 0;font-size:14px;color:#A8A29A">{{ p.status }}</td>
+                    </tr>
+                    <tr style="border-top:1px solid rgba(242,239,234,.10)">
+                      <td style="padding:10px 14px 10px 0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#6E6862;white-space:nowrap;vertical-align:top">STACK</td>
+                      <td style="padding:10px 0;font-size:14px;color:#A8A29A">{{ p.stack }}</td>
+                    </tr>
+                    <tr style="border-top:1px solid rgba(242,239,234,.10)">
+                      <td style="padding:10px 14px 10px 0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#6E6862;white-space:nowrap;vertical-align:top">RUNTIME</td>
+                      <td style="padding:10px 0;font-size:14px;color:#A8A29A">{{ p.runtime }}</td>
+                    </tr>
+                    <tr style="border-top:1px solid rgba(242,239,234,.10);border-bottom:1px solid rgba(242,239,234,.10)">
+                      <td style="padding:10px 14px 10px 0;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#6E6862;white-space:nowrap;vertical-align:top">OUTCOME</td>
+                      <td style="padding:10px 0;font-size:14px;line-height:1.6;color:#F2EFEA">{{ p.outcome }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <sc-if value="{{ p.hasImpact }}">
+                  <div style="display:inline-flex;flex-direction:column;background:#F2EFEA;color:#08070A;padding:14px 20px;margin-bottom:24px">
+                    <span style="font-size:26px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums">{{ p.impactVal }}</span>
+                    <span style="margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.62">{{ p.impactCap }}</span>
+                  </div>
+                </sc-if>
+
+                <div>
+                  <a href="{{ p.gh }}" style="display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid rgba(242,239,234,.28)" style-hover="border-color:#FF6A1F;color:#FF9257">View on GitHub →</a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </sc-for>
+        <div style="border-top:1px solid rgba(242,239,234,.12)"></div>
       </div>
+
     </div>
   </section>
 
@@ -809,9 +673,9 @@ class Component extends DCLogic {
     this.canvasRef = React.createRef();
     this.overlayRef = React.createRef();
     this.starRef = React.createRef();
-    this.projRef = React.createRef();
     this.statsRef = React.createRef();
-    this.state = { typed: '', phName: '', phEmail: '', phMsg: '', proj: 0, projN: 6 };
+    this.projStatsRef = React.createRef();
+    this.state = { typed: '', phName: '', phEmail: '', phMsg: '', projOpen: null };
     this.phT = {}; this.focus = {};
     this.mouse = { x: 0, y: 0, tx: 0, ty: 0 };
     this.fall = 0; this.fallT = 0;
@@ -824,23 +688,14 @@ class Component extends DCLogic {
       canvasRef: this.canvasRef,
       overlayRef: this.overlayRef,
       starRef: this.starRef,
-      projRef: this.projRef,
       statsRef: this.statsRef,
+      projStatsRef: this.projStatsRef,
       m1: Math.round(90 * (this.state.mp || 0)) + '%',
       m2: Math.round(45 * (this.state.mp || 0)) + 'h',
       m3: Math.round(8 * (this.state.mp || 0)) + '+',
-      projLabel: String(this.state.proj + 1).padStart(2, '0') + ' / ' + String(this.state.projN).padStart(2, '0'),
-      projTicks: Array.from({ length: this.state.projN }, (_, i) => ({
-        go: () => this.goProj(i),
-        label: 'Project ' + (i + 1),
-        h: i === this.state.proj ? '3px' : (i < this.state.proj ? '2px' : '1px'),
-        bg: i === this.state.proj ? '#FF6A1F' : (i < this.state.proj ? 'rgba(242,239,234,.34)' : 'rgba(242,239,234,.13)')
-      })),
-      projName: this.PROJ_NAMES[this.state.proj] || '',
+      projectRows: this.projectRows(),
       shotPrev: (e) => this.stepShot(e, -1),
       shotNext: (e) => this.stepShot(e, 1),
-      prevProj: () => this.stepProj(-1),
-      nextProj: () => this.stepProj(1),
       typed: this.state.typed,
       phName: this.state.phName,
       phEmail: this.state.phEmail,
@@ -937,22 +792,28 @@ class Component extends DCLogic {
 
   headline(){ return this.props.headline || 'Bring your idea to life on the web'; }
 
-  watchStats(){
-    const el = this.statsRef.current; if(!el) return;
+  // Shared by the About-section metrics (mp) and the projects impact stats
+  // (projMp) — each needs its own scroll trigger since a visitor can land on
+  // either section without ever passing through the other's observer.
+  watchCountUp(ref, stateKey){
+    const el = ref.current; if(!el) return;
+    this.countUpRaf = this.countUpRaf || {};
+    this.countUpObs = this.countUpObs || {};
     const run = () => {
       const t0 = performance.now(), dur = 1500;
       const tick = () => {
         const k = Math.min(1, (performance.now() - t0) / dur);
-        this.setState({ mp: 1 - Math.pow(1 - k, 3) });
-        if(k < 1) this.statsRaf = requestAnimationFrame(tick);
+        this.setState({ [stateKey]: 1 - Math.pow(1 - k, 3) });
+        if(k < 1) this.countUpRaf[stateKey] = requestAnimationFrame(tick);
       };
       tick();
     };
     if(!('IntersectionObserver' in window)) return run();
-    this.statsObs = new IntersectionObserver((entries) => {
-      if(entries.some(e => e.isIntersecting)){ this.statsObs.disconnect(); run(); }
+    const obs = new IntersectionObserver((entries) => {
+      if(entries.some(e => e.isIntersecting)){ obs.disconnect(); run(); }
     }, { threshold: 0.4 });
-    this.statsObs.observe(el);
+    this.countUpObs[stateKey] = obs;
+    obs.observe(el);
   }
 
   stepShot(e, dir){
@@ -971,37 +832,96 @@ class Component extends DCLogic {
     if(label) label.textContent = (next + 1) + ' / ' + shots.length;
   }
 
-  PROJ_NAMES = ['Amazon Scraper', 'Invoice Generator', 'Samay Store', 'Finance Tracker', 'Network Monitor', 'Reddit Data Extractor'];
+  // Every OUTCOME/STATUS line traces to something real in the linked repo —
+  // see the plan notes for sourcing. hasGallery projects reuse the existing
+  // data-gal/data-shot/image-slot markup; tier controls narrative depth.
+  PROJECTS = [
+    {
+      slug: 'obsidian', tier: 'case-study', hasGallery: true, galId: '0',
+      shotIds: ['obsidian-1', 'obsidian-2', 'obsidian-3'],
+      shotPlaceholders: ['A nightly report', 'A staged proposal diff', 'The CLI status output'],
+      name: 'Obsidian Agent',
+      pitch: 'Nightly pipeline that reads an Obsidian vault and digests it, unsupervised',
+      narrative: "Reads a personal knowledge vault every night, hashes notes so only what changed gets reprocessed, and splits the day's journal entry into atomic notes — merged into an existing note where it clearly belongs, or filed fresh with proper frontmatter. Nothing gets applied blindly: low-confidence cases are flagged in a report instead of guessed at, and every real write is wrapped in a git commit, so a bad night is one revert away.",
+      status: 'Dry-run by default, until trusted', stack: 'Python · Gemini API · Embeddings', runtime: 'Nightly, unsupervised',
+      outcome: '16 test files exercise the full pipeline end to end — manifest diff, reorganize, digest, report.',
+      impactNum: 16, impactUnit: '', impactCap: 'Automated tests covering the nightly pipeline',
+      gh: 'https://github.com/Alejog20/second_brain_obsidian'
+    },
+    {
+      slug: 'ulysses', tier: 'case-study', hasGallery: true, galId: '1',
+      shotIds: ['ulysses-1', 'ulysses-2', 'ulysses-3'],
+      shotPlaceholders: ['A scored job in Telegram', 'The menu bar app', 'The analytics dashboard'],
+      name: 'Upwork Ulysses Agent',
+      pitch: 'Six-agent pipeline that turns Upwork job emails into scored leads, proposals and demos',
+      narrative: 'Watches a mailbox for new Upwork postings, scores each one against a configurable profile, and pushes the good ones to Telegram with one-tap actions to draft a proposal or build a runnable demo prototype. A Narrator agent explains every score in plain language instead of a bare number, and a win-rate analytics dashboard turns real won/lost outcomes into scoring-weight suggestions — never applied automatically, always reviewed first.',
+      status: 'Phase 6 — all six agents live', stack: 'Python 3.14 · IMAP · Telegram · LLM API', runtime: 'Polls every 180s, plus on demand via CLI or menu bar',
+      outcome: '21 test files across roughly 5,000 lines back a 13-command CLI and a native macOS menu bar app.',
+      impactNum: 21, impactUnit: '', impactCap: 'Automated tests across a six-agent pipeline',
+      gh: 'https://github.com/Alejog20/Upwork-AI-Agent'
+    },
+    {
+      slug: 'scraper', tier: 'utility', hasGallery: false,
+      name: 'Multi-Platform Scraper',
+      pitch: 'Price-tracking scraper with a CLI and a scheduled Telegram bot, one resilience core',
+      status: 'v4.1 · actively maintained', stack: 'Python · Selenium · Telegram Bot API', runtime: 'One-shot CLI search or scheduled background jobs',
+      outcome: 'A 5-layer resilience funnel runs on every page, and a query-relevance filter drops off-target matches before they reach the output.',
+      impactNum: 5, impactUnit: '', impactCap: 'Layer resilience funnel, per scraped page',
+      gh: 'https://github.com/Alejog20/Multiple_source_scraper'
+    },
+    {
+      slug: 'invoice', tier: 'utility', hasGallery: false,
+      name: 'Invoice Generator',
+      pitch: 'One command turns spreadsheet rows into branded PDF invoices',
+      status: 'Active', stack: 'Python · Pandas · Openpyxl · ReportLab', runtime: 'Batch run from an XLSX file, PDFs out',
+      outcome: "Cuts manual billing time by over 90%, per the project's own production-use notes; a dedicated validator checks totals and tax before a PDF is written.",
+      impactNum: 90, impactUnit: '%', impactCap: 'Less manual billing time, per real use',
+      gh: 'https://github.com/Alejog20/Invoice_generator_from_xlsx'
+    },
+    {
+      slug: 'samay', tier: 'utility', hasGallery: true, galId: '2',
+      shotIds: ['samay-1', 'samay-2', 'samay-3'],
+      shotPlaceholders: ['Samay homepage', 'Product detail', 'Admin panel'],
+      name: 'Samay Store',
+      pitch: 'E-commerce platform connecting indigenous makers to digital markets',
+      status: 'Team capstone · Full Stack Java bootcamp', stack: 'Java · Spring Boot · SQL · Vanilla JS', runtime: 'Deployed web app — auth, admin panel, catalog',
+      outcome: 'Built with a team as the closing project of the Generation Full Stack Java bootcamp — backend validation and persistence were mine.',
+      gh: 'https://github.com/jorgeramirez2018/Proyecto-Samay'
+    },
+    {
+      slug: 'reddit', tier: 'utility', hasGallery: false,
+      name: 'Reddit Comment Extractor',
+      pitch: 'Pulls posts and comments through the official Reddit API, feeds a sentiment pipeline',
+      status: 'Active · rate-limit safe', stack: 'Python · Reddit API (OAuth2) · NLP', runtime: 'Configurable multi-term, multi-subreddit search',
+      outcome: "Authenticates via OAuth2 and stays inside Reddit's rate limits by design; output feeds directly into a sentiment-analysis pipeline.",
+      gh: 'https://github.com/Alejog20/Extract_Reddit_comments_bot'
+    }
+  ];
 
-  goProj(i){
-    const el = this.projRef.current; if(!el) return;
-    const target = el.children[i];
-    if(target) el.scrollTo({ left: target.offsetLeft - el.offsetLeft, behavior: 'smooth' });
-    this.setState({ proj: i });
+  projectRows(){
+    return this.PROJECTS.map((p, i) => {
+      const isOpen = i === this.state.projOpen;
+      return {
+        ...p,
+        idx: String(i + 1).padStart(2, '0'),
+        isOpen,
+        isCaseStudy: p.tier === 'case-study',
+        hasImpact: p.impactNum !== undefined,
+        impactVal: p.impactNum !== undefined ? Math.round(p.impactNum * (this.state.projMp || 0)) + (p.impactUnit || '') : '',
+        ariaExpanded: isOpen ? 'true' : 'false',
+        panelH: isOpen ? (p.hasGallery ? '1500px' : '480px') : '0px',
+        chevDeg: isOpen ? '45deg' : '0deg',
+        toggle: () => this.toggleProject(i),
+        shots: p.hasGallery ? p.shotIds.map((id, si) => ({
+          id, idx: String(si), placeholder: p.shotPlaceholders[si],
+          op: si === 0 ? '1' : '0', pe: si === 0 ? 'auto' : 'none'
+        })) : []
+      };
+    });
   }
 
-  stepProj(dir){
-    const el = this.projRef.current; if(!el) return;
-    const slides = el.children.length;
-    const next = Math.max(0, Math.min(slides - 1, this.state.proj + dir));
-    const target = el.children[next];
-    if(target) el.scrollTo({ left: target.offsetLeft - el.offsetLeft, behavior: 'smooth' });
-    this.setState({ proj: next, projN: slides });
-  }
-
-  watchProj(){
-    const el = this.projRef.current; if(!el) return;
-    this.setState({ projN: el.children.length });
-    let t = null;
-    this.onProjScroll = () => {
-      clearTimeout(t);
-      t = setTimeout(() => {
-        const w = el.clientWidth || 1;
-        const i = Math.round(el.scrollLeft / w);
-        if(i !== this.state.proj) this.setState({ proj: Math.max(0, Math.min(el.children.length - 1, i)) });
-      }, 90);
-    };
-    el.addEventListener('scroll', this.onProjScroll, { passive: true });
+  toggleProject(i){
+    this.setState({ projOpen: this.state.projOpen === i ? null : i });
   }
 
   startTyping(){
@@ -1170,8 +1090,8 @@ class Component extends DCLogic {
     this.initStars();
     setTimeout(() => this.startTyping(), 420);
     this.startPlaceholders();
-    this.watchProj();
-    this.watchStats();
+    this.watchCountUp(this.statsRef, 'mp');
+    this.watchCountUp(this.projStatsRef, 'projMp');
     const cv = this.canvasRef.current; if(!cv) return;
     const gl = cv.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true });
     if(!gl){ this.fallback(); return; }
@@ -1230,8 +1150,8 @@ class Component extends DCLogic {
   componentWillUnmount(){
     cancelAnimationFrame(this.raf);
     cancelAnimationFrame(this.starRaf);
-    cancelAnimationFrame(this.statsRaf);
-    if(this.statsObs) this.statsObs.disconnect();
+    Object.values(this.countUpRaf || {}).forEach(cancelAnimationFrame);
+    Object.values(this.countUpObs || {}).forEach(obs => obs.disconnect());
     this.stopped = true;
     if(this.typeTimer) clearTimeout(this.typeTimer);
     Object.values(this.phT || {}).forEach(clearTimeout);

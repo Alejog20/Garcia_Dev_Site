@@ -50,6 +50,11 @@ test.describe("projects section", () => {
   });
 
   test("a case-study row's screenshot gallery navigates", async ({ page }) => {
+    // Two gallery clicks (next, then prev) instead of one — on a loaded
+    // runner this can edge past the default 30s alongside everything else
+    // this component has going on (WebGL frame loop, up to six image-slot
+    // galleries). More headroom, not a different assertion.
+    test.setTimeout(60_000);
     await page.goto("/");
     await page.locator("#proyectos").scrollIntoViewIfNeeded();
 

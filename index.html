@@ -187,7 +187,7 @@
             <div style="max-height:{{ p.panelH }};overflow:hidden;transition:max-height .32s ease">
               <div data-proj-panel="true" style="padding:6px 4px 36px 64px">
 
-                <sc-if value="{{ p.hasGallery }}">
+                <sc-if value="{{ p.showGallery }}">
                   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(24px,3.5vw,48px);align-items:start;margin-bottom:24px">
                     <div style="position:relative;aspect-ratio:16/10;overflow:hidden;background:#0B0B0C;border:1px solid rgba(242,239,234,.08)">
                       <div data-gal="{{ p.galId }}" style="position:absolute;inset:0">
@@ -229,6 +229,19 @@
                     </tr>
                   </tbody>
                 </table>
+
+                <sc-if value="{{ p.hasCli }}">
+                  <div style="overflow-x:auto;background:#0B0B0C;border-top:1px solid rgba(242,239,234,.14);border-bottom:1px solid rgba(242,239,234,.14);padding:16px 18px;margin-bottom:24px">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#F2EFEA;white-space:pre-wrap"><span ref="{{ p.cliRef }}"></span><span style="display:inline-block;width:.55em;height:1em;margin-left:.1em;background:#FF6A1F;vertical-align:-2px;animation:omCaret 1.05s steps(1) infinite"></span></div>
+                    <sc-if value="{{ p.cliShowOut }}">
+                      <div style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#8E8880;white-space:pre">
+                        <sc-for list="{{ p.cliOut }}" as="line" hint-placeholder-count="5">
+                          <div>{{ line.text }}</div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
 
                 <sc-if value="{{ p.hasImpact }}">
                   <div style="display:inline-flex;flex-direction:column;background:#F2EFEA;color:#08070A;padding:14px 20px;margin-bottom:24px">
@@ -675,6 +688,8 @@ class Component extends DCLogic {
     this.starRef = React.createRef();
     this.statsRef = React.createRef();
     this.projStatsRef = React.createRef();
+    this.cliRefs = {}; this.cliPlayed = {};
+    this.PROJECTS.forEach(p => { if(p.cli) this.cliRefs[p.slug] = React.createRef(); });
     this.state = { typed: '', phName: '', phEmail: '', phMsg: '', projOpen: null };
     this.phT = {}; this.focus = {};
     this.mouse = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -846,7 +861,15 @@ class Component extends DCLogic {
       status: 'Dry-run by default, until trusted', stack: 'Python · Gemini API · Embeddings', runtime: 'Nightly, unsupervised',
       outcome: '16 test files exercise the full pipeline end to end — manifest diff, reorganize, digest, report.',
       impactNum: 16, impactUnit: '', impactCap: 'Automated tests covering the nightly pipeline',
-      gh: 'https://github.com/Alejog20/second_brain_obsidian'
+      gh: 'https://github.com/Alejog20/second_brain_obsidian',
+      cli: {
+        cmd: '$ second-brain check',
+        out: [
+          'Vault directory exists ..................... OK',
+          'Vault is a git repo ........................ OK',
+          'Gemini API key responsive .................. OK (12 models visible)'
+        ]
+      }
     },
     {
       slug: 'ulysses', tier: 'case-study', hasGallery: true, galId: '1',
@@ -858,19 +881,47 @@ class Component extends DCLogic {
       status: 'Phase 6 — all six agents live', stack: 'Python 3.14 · IMAP · Telegram · LLM API', runtime: 'Polls every 180s, plus on demand via CLI or menu bar',
       outcome: '21 test files across roughly 5,000 lines back a 13-command CLI and a native macOS menu bar app.',
       impactNum: 21, impactUnit: '', impactCap: 'Automated tests across a six-agent pipeline',
-      gh: 'https://github.com/Alejog20/Upwork-AI-Agent'
+      gh: 'https://github.com/Alejog20/Upwork-AI-Agent',
+      cli: {
+        cmd: '$ ulysses status',
+        out: [
+          'new             4',
+          'notified        4',
+          'drafted         2',
+          'built           1',
+          'skipped        11',
+          'archived        3',
+          'won             2',
+          'lost            1',
+          'total          28'
+        ]
+      }
     },
     {
-      slug: 'scraper', tier: 'utility', hasGallery: false,
+      slug: 'scraper', tier: 'utility', hasGallery: true, galId: '3',
+      shotIds: ['scraper-1', 'scraper-2', 'scraper-3'],
+      shotPlaceholders: ['The interactive CLI menu', 'A completed search table', 'An Excel export'],
       name: 'Multi-Platform Scraper',
       pitch: 'Price-tracking scraper with a CLI and a scheduled Telegram bot, one resilience core',
-      status: 'v4.1 · actively maintained', stack: 'Python · Selenium · Telegram Bot API', runtime: 'One-shot CLI search or scheduled background jobs',
-      outcome: 'A 5-layer resilience funnel runs on every page, and a query-relevance filter drops off-target matches before they reach the output.',
+      status: 'v5.0 "Definitive Edition" · actively maintained', stack: 'Python · Selenium · Telegram Bot API', runtime: 'One-shot CLI search or scheduled background jobs',
+      outcome: 'A 5-layer resilience funnel runs on every page, and a query-relevance filter drops off-target matches before they reach the output. 100% test coverage on the business-logic layer, deployed via Docker Compose with its own CD workflow.',
       impactNum: 5, impactUnit: '', impactCap: 'Layer resilience funnel, per scraped page',
-      gh: 'https://github.com/Alejog20/Multiple_source_scraper'
+      gh: 'https://github.com/Alejog20/Multiple_source_scraper',
+      cli: {
+        cmd: '$ python main.py\n> platform: 3 (Both)\n> product: sigma 18-50mm\n> pages per platform: 2\n> include sponsored listings: n',
+        out: [
+          'Found 6 Unique Products',
+          'SOURCE        TITLE                                    PRICE     RATING  REVIEWS',
+          'amazon        Sigma 18-50mm f/2.8 DC DN Contemporary   $549.00   4.7     1,203',
+          'mercadolibre  Sigma 18-50mm F2.8 Contemporary (Sony)   $612.35   4.6     88',
+          'amazon        Sigma 18-50mm Art Series Zoom Lens       $687.20   4.8     412'
+        ]
+      }
     },
     {
-      slug: 'invoice', tier: 'utility', hasGallery: false,
+      slug: 'invoice', tier: 'utility', hasGallery: true, galId: '4',
+      shotIds: ['invoice-1', 'invoice-2', 'invoice-3'],
+      shotPlaceholders: ['A generated PDF invoice', 'The source spreadsheet', 'The command running'],
       name: 'Invoice Generator',
       pitch: 'One command turns spreadsheet rows into branded PDF invoices',
       status: 'Active', stack: 'Python · Pandas · Openpyxl · ReportLab', runtime: 'Batch run from an XLSX file, PDFs out',
@@ -889,7 +940,9 @@ class Component extends DCLogic {
       gh: 'https://github.com/jorgeramirez2018/Proyecto-Samay'
     },
     {
-      slug: 'reddit', tier: 'utility', hasGallery: false,
+      slug: 'reddit', tier: 'utility', hasGallery: true, galId: '5',
+      shotIds: ['reddit-1', 'reddit-2', 'reddit-3'],
+      shotPlaceholders: ['Sentiment results', 'The extraction run', 'The output data'],
       name: 'Reddit Comment Extractor',
       pitch: 'Pulls posts and comments through the official Reddit API, feeds a sentiment pipeline',
       status: 'Active · rate-limit safe', stack: 'Python · Reddit API (OAuth2) · NLP', runtime: 'Configurable multi-term, multi-subreddit search',
@@ -912,16 +965,54 @@ class Component extends DCLogic {
         panelH: isOpen ? (p.hasGallery ? '1500px' : '480px') : '0px',
         chevDeg: isOpen ? '45deg' : '0deg',
         toggle: () => this.toggleProject(i),
+        // Galleries mount image-slot custom elements — expensive enough
+        // (async state fetch, drag-drop, crop tooling) that keeping all six
+        // projects' galleries mounted at once measurably jars interaction.
+        // Only the open row (at most one) ever needs its gallery mounted.
+        showGallery: p.hasGallery && isOpen,
         shots: p.hasGallery ? p.shotIds.map((id, si) => ({
           id, idx: String(si), placeholder: p.shotPlaceholders[si],
           op: si === 0 ? '1' : '0', pe: si === 0 ? 'auto' : 'none'
-        })) : []
+        })) : [],
+        hasCli: !!p.cli,
+        cliRef: p.cli ? this.cliRefs[p.slug] : undefined,
+        cliShowOut: p.cli ? !!this.state['cliDone_' + p.slug] : false,
+        cliOut: p.cli ? p.cli.out.map((text, li) => ({ text, k: li })) : []
       };
     });
   }
 
   toggleProject(i){
-    this.setState({ projOpen: this.state.projOpen === i ? null : i });
+    const opening = this.state.projOpen !== i;
+    this.setState({ projOpen: opening ? i : null });
+    const p = opening && this.PROJECTS[i];
+    if(p && p.cli) this.startCliTyping(p.slug, p.cli.cmd);
+  }
+
+  // One-shot terminal typing for the CLI-reveal projects — plays once per
+  // slug the first time its row opens, then stays at its final state.
+  // Writes straight into the DOM (like stepShot does for galleries) rather
+  // than through setState per character: this component also drives the
+  // WebGL frame loop and up to six always-mounted image-slot galleries, and
+  // a full re-render on every keystroke-speed tick was measurably janking
+  // interaction (gallery nav clicks stalling for seconds mid-type).
+  startCliTyping(slug, text){
+    if(this.cliPlayed[slug]) return;
+    this.cliPlayed[slug] = true;
+    const el = this.cliRefs[slug] && this.cliRefs[slug].current;
+    this.cliTimers = this.cliTimers || {};
+    let n = 0;
+    const step = () => {
+      n++;
+      if(el) el.textContent = text.slice(0, n);
+      if(n < text.length){
+        const ch = text[n - 1];
+        this.cliTimers[slug] = setTimeout(step, 22 + Math.random() * 46 + (ch === '\n' ? 220 : 0));
+      } else {
+        this.cliTimers[slug] = setTimeout(() => this.setState({ ['cliDone_' + slug]: true }), 300);
+      }
+    };
+    step();
   }
 
   startTyping(){
@@ -1155,6 +1246,7 @@ class Component extends DCLogic {
     this.stopped = true;
     if(this.typeTimer) clearTimeout(this.typeTimer);
     Object.values(this.phT || {}).forEach(clearTimeout);
+    Object.values(this.cliTimers || {}).forEach(clearTimeout);
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('pointermove', this.onMove);
     window.removeEventListener('pointerup', this.onUp);

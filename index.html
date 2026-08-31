@@ -231,14 +231,18 @@
                 </table>
 
                 <sc-if value="{{ p.hasCli }}">
-                  <div style="overflow-x:auto;background:#0B0B0C;border-top:1px solid rgba(242,239,234,.14);border-bottom:1px solid rgba(242,239,234,.14);padding:16px 18px;margin-bottom:24px">
-                    <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#F2EFEA;white-space:pre-wrap"><span ref="{{ p.cliRef }}"></span><span style="display:inline-block;width:.55em;height:1em;margin-left:.1em;background:#FF6A1F;vertical-align:-2px;animation:omCaret 1.05s steps(1) infinite"></span></div>
+                  <div style="overflow-x:auto;background:#0B0B0C;border-top:1px solid rgba(242,239,234,.14);border-bottom:1px solid rgba(242,239,234,.14);padding:16px 18px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.5">
+                    <div ref="{{ p.cliRef }}" tabindex="0" role="button" aria-label="Run: {{ p.cliCmd }}" onClick="{{ p.cliRunHandler }}" onKeyDown="{{ p.cliKeyDown }}" style-focus-visible="outline:1px dashed #FF6A1F;outline-offset:3px" style="outline:none;cursor:pointer">
+                      <span style="color:#F2EFEA">$ {{ p.cliCmd }}</span><sc-if value="{{ p.cliShowPrompt }}"><span style="display:inline-block;width:.55em;height:1em;margin-left:.1em;background:#FF6A1F;vertical-align:-2px;animation:omCaret 1.05s steps(1) infinite"></span></sc-if>
+                      <sc-if value="{{ p.cliShowPrompt }}">
+                        <div style="margin-top:6px;color:#6E6862;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase">Press enter to run</div>
+                      </sc-if>
+                    </div>
+                    <sc-if value="{{ p.cliShowRunning }}">
+                      <div style="margin-top:2px;color:#6E6862;animation:omPulse 1s ease-in-out infinite">Running…</div>
+                    </sc-if>
                     <sc-if value="{{ p.cliShowOut }}">
-                      <div style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#8E8880;white-space:pre">
-                        <sc-for list="{{ p.cliOut }}" as="line" hint-placeholder-count="5">
-                          <div>{{ line.text }}</div>
-                        </sc-for>
-                      </div>
+                      <div style="margin-top:2px;color:#8E8880;white-space:pre">{{ p.cliOutText }}</div>
                     </sc-if>
                   </div>
                 </sc-if>
@@ -863,12 +867,12 @@ class Component extends DCLogic {
       impactNum: 16, impactUnit: '', impactCap: 'Automated tests covering the nightly pipeline',
       gh: 'https://github.com/Alejog20/second_brain_obsidian',
       cli: {
-        cmd: '$ second-brain check',
+        cmd: 'uv run second-brain check',
         out: [
           'Vault directory exists ..................... OK',
           'Vault is a git repo ........................ OK',
           'Gemini API key responsive .................. OK (12 models visible)'
-        ]
+        ].join('\n')
       }
     },
     {
@@ -883,7 +887,7 @@ class Component extends DCLogic {
       impactNum: 21, impactUnit: '', impactCap: 'Automated tests across a six-agent pipeline',
       gh: 'https://github.com/Alejog20/Upwork-AI-Agent',
       cli: {
-        cmd: '$ ulysses status',
+        cmd: 'uv run ulysses status',
         out: [
           'new             4',
           'notified        4',
@@ -894,7 +898,7 @@ class Component extends DCLogic {
           'won             2',
           'lost            1',
           'total          28'
-        ]
+        ].join('\n')
       }
     },
     {
@@ -908,14 +912,25 @@ class Component extends DCLogic {
       impactNum: 5, impactUnit: '', impactCap: 'Layer resilience funnel, per scraped page',
       gh: 'https://github.com/Alejog20/Multiple_source_scraper',
       cli: {
-        cmd: '$ python main.py\n> platform: 3 (Both)\n> product: sigma 18-50mm\n> pages per platform: 2\n> include sponsored listings: n',
+        cmd: 'uv run python main.py',
         out: [
+          'Multi-Platform E-Commerce Scraper — v5.0 (Definitive Edition)',
+          '',
+          'Select a platform to scrape:',
+          '  1. Amazon',
+          '  2. MercadoLibre',
+          '  3. Both',
+          'Enter your choice [1/2/3] (3): 3',
+          'What product are you looking for?: sigma 18-50mm',
+          'How many pages per platform? (0 = all available) (1): 2',
+          'Include sponsored/advertised products? [y/n] (y): n',
+          '',
           'Found 6 Unique Products',
           'SOURCE        TITLE                                    PRICE     RATING  REVIEWS',
           'amazon        Sigma 18-50mm f/2.8 DC DN Contemporary   $549.00   4.7     1,203',
           'mercadolibre  Sigma 18-50mm F2.8 Contemporary (Sony)   $612.35   4.6     88',
           'amazon        Sigma 18-50mm Art Series Zoom Lens       $687.20   4.8     412'
-        ]
+        ].join('\n')
       }
     },
     {
@@ -976,8 +991,13 @@ class Component extends DCLogic {
         })) : [],
         hasCli: !!p.cli,
         cliRef: p.cli ? this.cliRefs[p.slug] : undefined,
+        cliCmd: p.cli ? p.cli.cmd : '',
+        cliRunHandler: p.cli ? () => this.runCli(p.slug) : undefined,
+        cliKeyDown: p.cli ? (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); this.runCli(p.slug); } } : undefined,
+        cliShowPrompt: p.cli ? !this.state['cliRun_' + p.slug] : false,
+        cliShowRunning: p.cli ? (!!this.state['cliRun_' + p.slug] && !this.state['cliDone_' + p.slug]) : false,
         cliShowOut: p.cli ? !!this.state['cliDone_' + p.slug] : false,
-        cliOut: p.cli ? p.cli.out.map((text, li) => ({ text, k: li })) : []
+        cliOutText: p.cli ? p.cli.out : ''
       };
     });
   }
@@ -986,33 +1006,27 @@ class Component extends DCLogic {
     const opening = this.state.projOpen !== i;
     this.setState({ projOpen: opening ? i : null });
     const p = opening && this.PROJECTS[i];
-    if(p && p.cli) this.startCliTyping(p.slug, p.cli.cmd);
+    // Focus the prompt line so a keyboard user can hit Enter immediately —
+    // the panel content is always in the DOM (just clipped), so the ref
+    // target already exists without waiting on this setState to flush.
+    if(p && p.cli){
+      const el = this.cliRefs[p.slug] && this.cliRefs[p.slug].current;
+      if(el) el.focus();
+    }
   }
 
-  // One-shot terminal typing for the CLI-reveal projects — plays once per
-  // slug the first time its row opens, then stays at its final state.
-  // Writes straight into the DOM (like stepShot does for galleries) rather
-  // than through setState per character: this component also drives the
-  // WebGL frame loop and up to six always-mounted image-slot galleries, and
-  // a full re-render on every keystroke-speed tick was measurably janking
-  // interaction (gallery nav clicks stalling for seconds mid-type).
-  startCliTyping(slug, text){
+  // Runs once per slug — real terminals don't let you re-run history by
+  // pressing enter again on old output. A short "Running…" beat between
+  // command and result keeps the two visually sequential rather than both
+  // appearing at once.
+  runCli(slug){
     if(this.cliPlayed[slug]) return;
     this.cliPlayed[slug] = true;
-    const el = this.cliRefs[slug] && this.cliRefs[slug].current;
+    this.setState({ ['cliRun_' + slug]: true });
     this.cliTimers = this.cliTimers || {};
-    let n = 0;
-    const step = () => {
-      n++;
-      if(el) el.textContent = text.slice(0, n);
-      if(n < text.length){
-        const ch = text[n - 1];
-        this.cliTimers[slug] = setTimeout(step, 22 + Math.random() * 46 + (ch === '\n' ? 220 : 0));
-      } else {
-        this.cliTimers[slug] = setTimeout(() => this.setState({ ['cliDone_' + slug]: true }), 300);
-      }
-    };
-    step();
+    this.cliTimers[slug] = setTimeout(() => {
+      this.setState({ ['cliDone_' + slug]: true });
+    }, 450);
   }
 
   startTyping(){

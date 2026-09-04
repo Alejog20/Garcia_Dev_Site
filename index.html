@@ -234,17 +234,22 @@
                 <sc-if value="{{ p.hasCli }}">
                   <div style="position:relative;margin-bottom:24px">
                     <div data-cli-term="true" style="overflow-x:auto;background:#0B0B0C;border-top:1px solid rgba(242,239,234,.14);border-bottom:1px solid rgba(242,239,234,.14);padding:16px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.5">
-                      <div ref="{{ p.cliRef }}" tabindex="0" role="button" aria-label="Run: {{ p.cliCmd }}" onClick="{{ p.cliRunHandler }}" onKeyDown="{{ p.cliKeyDown }}" style-focus-visible="outline:1px dashed #FF6A1F;outline-offset:3px" style="outline:none;cursor:pointer">
-                        <span style="color:#F2EFEA">$ {{ p.cliCmd }}</span><sc-if value="{{ p.cliShowPrompt }}"><span style="display:inline-block;width:.55em;height:1em;margin-left:.1em;background:#FF6A1F;vertical-align:-2px;animation:omCaret 1.05s steps(1) infinite"></span></sc-if>
-                        <sc-if value="{{ p.cliShowPrompt }}">
-                          <div style="margin-top:6px;color:#6E6862;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase">Press enter to run</div>
-                        </sc-if>
-                      </div>
-                      <sc-if value="{{ p.cliShowRunning }}">
-                        <div style="margin-top:2px;color:#6E6862;animation:omPulse 1s ease-in-out infinite">Running…</div>
-                      </sc-if>
-                      <sc-if value="{{ p.cliShowOut }}">
-                        <div style="margin-top:2px;color:#8E8880;white-space:pre">{{ p.cliOutText }}</div>
+                      <sc-for list="{{ p.cliSteps }}" as="step" hint-placeholder-count="2">
+                        <div style="margin-top:{{ step.topGap }}">
+                          <div ref="{{ step.promptRef }}" tabindex="{{ step.tabIdx }}" role="button" aria-label="Run: {{ step.cmd }}" onClick="{{ step.runHandler }}" onKeyDown="{{ step.keyDown }}" style-focus-visible="outline:1px dashed #FF6A1F;outline-offset:3px" style="outline:none;cursor:pointer">
+                            <span style="color:#F2EFEA">$ {{ step.cmd }}</span><sc-if value="{{ step.showPrompt }}"><span style="display:inline-block;width:.55em;height:1em;margin-left:.1em;background:#FF6A1F;vertical-align:-2px;animation:omCaret 1.05s steps(1) infinite"></span></sc-if>
+                            <sc-if value="{{ step.showPrompt }}">
+                              <div style="margin-top:6px;color:#6E6862;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase">Press enter to run</div>
+                            </sc-if>
+                          </div>
+                          <sc-if value="{{ step.showRunning }}">
+                            <div style="margin-top:2px;color:#6E6862;animation:omPulse 1s ease-in-out infinite">Running…</div>
+                          </sc-if>
+                          <div ref="{{ step.outRef }}" aria-live="polite" style="margin-top:2px;color:#8E8880;white-space:pre"></div>
+                        </div>
+                      </sc-for>
+                      <sc-if value="{{ p.cliFinished }}">
+                        <button type="button" onClick="{{ p.cliReplayHandler }}" style="margin-top:14px;background:none;border:1px solid rgba(242,239,234,.2);color:#8E8880;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:7px 12px;cursor:pointer" style-hover="border-color:#FF6A1F;color:#FF9257">&#8635; run again</button>
                       </sc-if>
                     </div>
                     <div aria-hidden="true" style="position:absolute;top:1px;bottom:1px;right:0;width:26px;background:linear-gradient(to right, rgba(11,11,12,0), #0B0B0C 78%);pointer-events:none"></div>
@@ -702,8 +707,10 @@ class Component extends DCLogic {
     this.starRef = React.createRef();
     this.statsRef = React.createRef();
     this.projStatsRef = React.createRef();
-    this.cliRefs = {}; this.cliPlayed = {};
-    this.PROJECTS.forEach(p => { if(p.cli) this.cliRefs[p.slug] = React.createRef(); });
+    this.cliRefs = {}; this.cliBusy = {};
+    this.PROJECTS.forEach(p => {
+      if(p.cli) this.cliRefs[p.slug] = p.cli.steps.map(() => ({ promptRef: React.createRef(), outRef: React.createRef() }));
+    });
     this.state = { typed: '', phName: '', phEmail: '', phMsg: '', projOpen: null };
     this.phT = {}; this.focus = {};
     this.mouse = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -877,12 +884,30 @@ class Component extends DCLogic {
       impactNum: 16, impactUnit: '', impactCap: 'Automated tests covering the nightly pipeline',
       gh: 'https://github.com/Alejog20/second_brain_obsidian',
       cli: {
-        cmd: 'uv run second-brain check',
-        out: [
-          'Vault directory exists ..................... OK',
-          'Vault is a git repo ........................ OK',
-          'Gemini API key responsive .................. OK (12 models visible)'
-        ].join('\n')
+        steps: [
+          {
+            cmd: 'uv run second-brain check',
+            lines: [
+              { text: 'Vault directory exists ..................... OK', wait: 200 },
+              { text: 'Vault is a git repo ........................ OK', wait: 180 },
+              { text: 'Gemini API key responsive .................. OK (12 models visible)', wait: 700 }
+            ]
+          },
+          {
+            cmd: 'uv run second-brain status',
+            lines: [
+              { text: 'Vault path .................... ~/vault', wait: 160 },
+              { text: 'Safety mode .................... dry_run', wait: 130 },
+              { text: 'Require git .................... True', wait: 120 },
+              { text: 'Materiality threshold .......... structural', wait: 130 },
+              { text: '', wait: 160 },
+              { text: 'Model routing:', wait: 140 },
+              { text: '  bulk_grammar_pass   gemini   gemini-3.5-flash', wait: 130 },
+              { text: '  title_and_tagging   gemini   gemini-3.5-flash', wait: 110 },
+              { text: '  daily_digestion     gemini   gemini-3.5-flash', wait: 110 }
+            ]
+          }
+        ]
       }
     },
     {
@@ -897,18 +922,31 @@ class Component extends DCLogic {
       impactNum: 21, impactUnit: '', impactCap: 'Automated tests across a six-agent pipeline',
       gh: 'https://github.com/Alejog20/Upwork-AI-Agent',
       cli: {
-        cmd: 'uv run ulysses status',
-        out: [
-          'new             4',
-          'notified        4',
-          'drafted         2',
-          'built           1',
-          'skipped        11',
-          'archived        3',
-          'won             2',
-          'lost            1',
-          'total          28'
-        ].join('\n')
+        steps: [
+          {
+            cmd: 'uv run ulysses status',
+            lines: [
+              { text: 'new             4', wait: 140 },
+              { text: 'notified        4', wait: 100 },
+              { text: 'drafted         2', wait: 100 },
+              { text: 'built           1', wait: 100 },
+              { text: 'skipped        11', wait: 100 },
+              { text: 'archived        3', wait: 100 },
+              { text: 'won             2', wait: 100 },
+              { text: 'lost            1', wait: 100 },
+              { text: 'total          28', wait: 160 }
+            ]
+          },
+          {
+            cmd: 'uv run ulysses queue --min-score 70 --category tier1',
+            lines: [
+              { text: 'SCORE  CATEGORY  STATUS    TITLE', wait: 220 },
+              { text: '87     tier1     notified  Senior Python automation engineer, contract', wait: 160 },
+              { text: '74     tier1     drafted   FastAPI backend for internal tools', wait: 140 },
+              { text: '71     tier1     notified  Data pipeline engineer, short-term', wait: 140 }
+            ]
+          }
+        ]
       }
     },
     {
@@ -922,25 +960,44 @@ class Component extends DCLogic {
       impactNum: 5, impactUnit: '', impactCap: 'Layer resilience funnel, per scraped page',
       gh: 'https://github.com/Alejog20/Multiple_source_scraper',
       cli: {
-        cmd: 'uv run python main.py',
-        out: [
-          'Multi-Platform E-Commerce Scraper — v5.0 (Definitive Edition)',
-          '',
-          'Select a platform to scrape:',
-          '  1. Amazon',
-          '  2. MercadoLibre',
-          '  3. Both',
-          'Enter your choice [1/2/3] (3): 3',
-          'What product are you looking for?: sigma 18-50mm',
-          'How many pages per platform? (0 = all available) (1): 2',
-          'Include sponsored/advertised products? [y/n] (y): n',
-          '',
-          'Found 6 Unique Products',
-          'SOURCE        TITLE                                    PRICE     RATING  REVIEWS',
-          'amazon        Sigma 18-50mm f/2.8 DC DN Contemporary   $549.00   4.7     1,203',
-          'mercadolibre  Sigma 18-50mm F2.8 Contemporary (Sony)   $612.35   4.6     88',
-          'amazon        Sigma 18-50mm Art Series Zoom Lens       $687.20   4.8     412'
-        ].join('\n')
+        steps: [
+          {
+            cmd: 'uv run python main.py',
+            lines: [
+              { text: 'Multi-Platform E-Commerce Scraper — v5.0 (Definitive Edition)', wait: 220 },
+              { text: '', wait: 120 },
+              { text: 'Select a platform to scrape:', wait: 160 },
+              { text: '  1. Amazon', wait: 90 },
+              { text: '  2. MercadoLibre', wait: 90 },
+              { text: '  3. Both', wait: 90 },
+              { text: 'Enter your choice [1/2/3] (3): 3', wait: 280 },
+              { text: 'What product are you looking for?: sigma 18-50mm', wait: 380 },
+              { text: 'How many pages per platform? (0 = all available) (1): 2', wait: 300 },
+              { text: 'Include sponsored/advertised products? [y/n] (y): n', wait: 260 },
+              { text: '', wait: 200 },
+              { text: 'Found 6 Unique Products', wait: 1400 },
+              { text: 'SOURCE        TITLE                                    PRICE     RATING  REVIEWS', wait: 150 },
+              { text: 'amazon        Sigma 18-50mm f/2.8 DC DN Contemporary   $549.00   4.7     1,203', wait: 90 },
+              { text: 'mercadolibre  Sigma 18-50mm F2.8 Contemporary (Sony)   $612.35   4.6     88', wait: 90 },
+              { text: 'amazon        Sigma 18-50mm Art Series Zoom Lens       $687.20   4.8     412', wait: 90 }
+            ]
+          },
+          {
+            cmd: 'uv run python main.py',
+            lines: [
+              { text: 'What would you like to do?', wait: 220 },
+              { text: '  1. Search products', wait: 90 },
+              { text: '  2. Export scrape history to Excel', wait: 90 },
+              { text: '  3. Run test scrape for a tracked job', wait: 90 },
+              { text: 'Enter your choice [1/2/3]: 2', wait: 280 },
+              { text: '', wait: 160 },
+              { text: 'Available jobs:', wait: 160 },
+              { text: '  1. sigma 18-50mm | Amazon, MercadoLibre | active', wait: 220 },
+              { text: '', wait: 160 },
+              { text: 'Data successfully exported to scraped_data_sigma_18-50mm_20260904_211530.xlsx', wait: 550 }
+            ]
+          }
+        ]
       }
     },
     {
@@ -1000,14 +1057,35 @@ class Component extends DCLogic {
           op: si === 0 ? '1' : '0', pe: si === 0 ? 'auto' : 'none'
         })) : [],
         hasCli: !!p.cli,
-        cliRef: p.cli ? this.cliRefs[p.slug] : undefined,
-        cliCmd: p.cli ? p.cli.cmd : '',
-        cliRunHandler: p.cli ? () => this.runCli(p.slug) : undefined,
-        cliKeyDown: p.cli ? (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); this.runCli(p.slug); } } : undefined,
-        cliShowPrompt: p.cli ? !this.state['cliRun_' + p.slug] : false,
-        cliShowRunning: p.cli ? (!!this.state['cliRun_' + p.slug] && !this.state['cliDone_' + p.slug]) : false,
-        cliShowOut: p.cli ? !!this.state['cliDone_' + p.slug] : false,
-        cliOutText: p.cli ? p.cli.out : ''
+        cliSteps: p.cli ? this.cliStepsFor(p) : [],
+        cliFinished: p.cli ? !!this.state['cliFinished_' + p.slug] : false,
+        cliReplayHandler: p.cli ? () => this.replayCli(p.slug) : undefined
+      };
+    });
+  }
+
+  // One render-ready entry per step reached so far (0..current). Earlier
+  // steps render as settled history — their output div keeps whatever
+  // lines runCli already appended to it, since it's never re-rendered by
+  // React once mounted (see runCli). Only the current step is interactive.
+  cliStepsFor(p){
+    const slug = p.slug;
+    const stepIdx = this.state['cliStepIdx_' + slug] || 0;
+    const refs = this.cliRefs[slug];
+    return p.cli.steps.slice(0, stepIdx + 1).map((step, i) => {
+      const isLive = i === stepIdx;
+      const run = !!this.state['cliRun_' + slug + '_' + i];
+      const done = !!this.state['cliDone_' + slug + '_' + i];
+      return {
+        cmd: step.cmd,
+        topGap: i === 0 ? '0px' : '14px',
+        promptRef: refs[i].promptRef,
+        outRef: refs[i].outRef,
+        tabIdx: isLive ? '0' : '-1',
+        showPrompt: isLive && !run,
+        showRunning: isLive && run && !done && !this.state['cliStreaming_' + slug + '_' + i],
+        runHandler: () => this.runCli(slug, i),
+        keyDown: (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); this.runCli(slug, i); } }
       };
     });
   }
@@ -1016,27 +1094,81 @@ class Component extends DCLogic {
     const opening = this.state.projOpen !== i;
     this.setState({ projOpen: opening ? i : null });
     const p = opening && this.PROJECTS[i];
-    // Focus the prompt line so a keyboard user can hit Enter immediately —
+    // Focus step 0's prompt so a keyboard user can hit Enter immediately —
     // the panel content is always in the DOM (just clipped), so the ref
     // target already exists without waiting on this setState to flush.
     if(p && p.cli){
-      const el = this.cliRefs[p.slug] && this.cliRefs[p.slug].current;
+      const el = this.cliRefs[p.slug][0].promptRef.current;
       if(el) el.focus();
     }
   }
 
-  // Runs once per slug — real terminals don't let you re-run history by
-  // pressing enter again on old output. A short "Running…" beat between
-  // command and result keeps the two visually sequential rather than both
-  // appearing at once.
-  runCli(slug){
-    if(this.cliPlayed[slug]) return;
-    this.cliPlayed[slug] = true;
-    this.setState({ ['cliRun_' + slug]: true });
+  // Progressive line-by-line reveal for one CLI step. Appends straight into
+  // the DOM (like stepShot does for galleries) rather than through setState
+  // per line — this component also drives the WebGL frame loop and up to
+  // six image-slot galleries, and frequent setState already measurably
+  // janked interaction once this session (see the earlier per-character
+  // typing bug). setState here is reserved for the infrequent phase changes
+  // (running -> revealing -> next prompt / finished), not per line.
+  runCli(slug, stepIdx){
+    if(stepIdx !== (this.state['cliStepIdx_' + slug] || 0)) return; // ignore clicks on settled history
+    if(this.cliBusy[slug]) return;
+    this.cliBusy[slug] = true;
+    this.setState({ ['cliRun_' + slug + '_' + stepIdx]: true });
     this.cliTimers = this.cliTimers || {};
+    const p = this.PROJECTS.find(pr => pr.slug === slug);
+    const step = p.cli.steps[stepIdx];
+    const el = this.cliRefs[slug][stepIdx].outRef.current;
+    let li = 0;
+    const appendNext = () => {
+      if(li >= step.lines.length){
+        this.cliBusy[slug] = false;
+        this.setState({ ['cliDone_' + slug + '_' + stepIdx]: true });
+        this.cliTimers[slug] = setTimeout(() => {
+          if(stepIdx + 1 < p.cli.steps.length){
+            this.setState({ ['cliStepIdx_' + slug]: stepIdx + 1 }, () => {
+              const nextEl = this.cliRefs[slug][stepIdx + 1].promptRef.current;
+              if(nextEl) nextEl.focus();
+            });
+          } else {
+            this.setState({ ['cliFinished_' + slug]: true });
+          }
+        }, 400);
+        return;
+      }
+      const line = step.lines[li++];
+      this.cliTimers[slug] = setTimeout(() => {
+        if(el){
+          const row = document.createElement('div');
+          row.textContent = line.text || ' ';
+          el.appendChild(row);
+        }
+        appendNext();
+      }, line.wait);
+    };
     this.cliTimers[slug] = setTimeout(() => {
-      this.setState({ ['cliDone_' + slug]: true });
-    }, 450);
+      // "Running…" only covers this initial pause — once real output starts
+      // landing the pulse would sit above it and read out of order.
+      this.setState({ ['cliStreaming_' + slug + '_' + stepIdx]: true });
+      appendNext();
+    }, 400);
+  }
+
+  replayCli(slug){
+    if(this.cliBusy[slug]) return;
+    const p = this.PROJECTS.find(pr => pr.slug === slug);
+    const upd = { ['cliStepIdx_' + slug]: 0, ['cliFinished_' + slug]: false };
+    p.cli.steps.forEach((_, i) => {
+      upd['cliRun_' + slug + '_' + i] = false;
+      upd['cliDone_' + slug + '_' + i] = false;
+      upd['cliStreaming_' + slug + '_' + i] = false;
+      const outEl = this.cliRefs[slug][i].outRef.current;
+      if(outEl) outEl.textContent = '';
+    });
+    this.setState(upd, () => {
+      const el = this.cliRefs[slug][0].promptRef.current;
+      if(el) el.focus();
+    });
   }
 
   startTyping(){

@@ -86,6 +86,52 @@ test.describe("projects section", () => {
     await expect(gallery.locator('[data-shot="1"]')).toHaveCSS("opacity", "1");
   });
 
+  test("a CLI-enabled row runs progressively, advances steps, and replays", async ({ page }) => {
+    // Full sequence (open -> run step 1 -> auto-advance -> run step 2 ->
+    // replay) legitimately takes several seconds of *intended* delay even
+    // at full speed, and a loaded runner can stretch setTimeout delays far
+    // beyond that (observed 17s+ for this exact flow during development on
+    // a loaded machine, for ~2s of intended delay) — generous budget here
+    // isn't padding for its own sake.
+    test.setTimeout(120_000);
+    await page.goto("/");
+    await page.locator("#proyectos").scrollIntoViewIfNeeded();
+
+    await rowTrigger(page, "Obsidian Agent").click();
+
+    const step1Prompt = page.locator('[aria-label="Run: uv run second-brain check"]');
+    await expect(step1Prompt).toBeVisible();
+    await expect(step1Prompt).toBeFocused();
+
+    await page.keyboard.press("Enter");
+
+    // Output streams in line by line — the first line should land well
+    // before the last one; asserting the last confirms the whole chain ran.
+    const step1Out = page.locator('[aria-label="Run: uv run second-brain check"] + div');
+    await expect(step1Out).toContainText("Gemini API key responsive", { timeout: 45_000 });
+
+    // Step 2's prompt appears on its own (no click needed) once step 1
+    // finishes, and receives focus so a keyboard user can act immediately.
+    const step2Prompt = page.locator('[aria-label="Run: uv run second-brain status"]');
+    await expect(step2Prompt).toBeVisible({ timeout: 45_000 });
+    await expect(step2Prompt).toBeFocused();
+
+    await page.keyboard.press("Enter");
+
+    const step2Out = page.locator('[aria-label="Run: uv run second-brain status"] + div');
+    await expect(step2Out).toContainText("Model routing", { timeout: 45_000 });
+
+    const replay = page.getByRole("button", { name: /run again/i });
+    await expect(replay).toBeVisible({ timeout: 45_000 });
+
+    await replay.click();
+
+    // Back to a clean step 1: prompt showing again, step 2 gone, output cleared.
+    await expect(step1Prompt).toBeVisible();
+    await expect(step1Out).toHaveText("");
+    await expect(step2Prompt).toHaveCount(0);
+  });
+
   test("every GitHub link points somewhere real", async ({ page }) => {
     // The panel markup stays in the DOM (clipped via max-height) even while
     // collapsed, so every row's link is present without opening it first.

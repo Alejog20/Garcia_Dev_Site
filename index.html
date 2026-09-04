@@ -717,6 +717,9 @@ class Component extends DCLogic {
     this.fall = 0; this.fallT = 0;
     this.t0 = performance.now();
     this.visible = true;
+    // Default true so the first paint isn't held back before the observer
+    // reports in — the hero is what's on screen at load anyway.
+    this.heroInView = true;
   }
 
   renderVals(){
@@ -782,6 +785,18 @@ class Component extends DCLogic {
     return new Promise(res => { this.phT['w' + (this.phSeq = (this.phSeq || 0) + 1)] = setTimeout(res, ms); });
   }
 
+  // Resolves immediately if the contact section is already on screen,
+  // otherwise the next time contactObs reports it visible (or on unmount,
+  // so startPlaceholders' loop can wake up and see this.stopped rather
+  // than waiting forever on a section that's never coming back).
+  waitVisible(){
+    if(this.contactVisible) return Promise.resolve();
+    return new Promise(res => {
+      this.contactVisResolvers = this.contactVisResolvers || [];
+      this.contactVisResolvers.push(res);
+    });
+  }
+
   async typeField(key, text){
     if(this.focus[key]) return;
     for(let n = 1; n <= text.length; n++){
@@ -810,6 +825,12 @@ class Component extends DCLogic {
   async startPlaceholders(){
     await this.wait(1200);
     for(let i = 0; !this.stopped; i++){
+      // This loop runs for as long as the tab is open — measured at ~7-8%
+      // of a CPU core continuously, regardless of scroll position, before
+      // this gate. A cycle already typing when the visitor scrolls away
+      // just finishes on its own; it's only the *next* cycle that waits.
+      await this.waitVisible();
+      if(this.stopped) return;
       const nameList = this.PH_SETS.phName, mailList = this.PH_SETS.phEmail, msgList = this.PH_SETS.phMsg;
       const k = i % msgList.length;
       await this.typeField('phName', nameList[k % nameList.length]);
@@ -1336,6 +1357,20 @@ class Component extends DCLogic {
   componentDidMount(){
     this.initStars();
     setTimeout(() => this.startTyping(), 420);
+    const contactEl = document.getElementById('contacto');
+    if(contactEl && 'IntersectionObserver' in window){
+      this.contactObs = new IntersectionObserver((entries) => {
+        this.contactVisible = entries.some(e => e.isIntersecting);
+        if(this.contactVisible && this.contactVisResolvers && this.contactVisResolvers.length){
+          const resolvers = this.contactVisResolvers;
+          this.contactVisResolvers = [];
+          resolvers.forEach(res => res());
+        }
+      }, { threshold: 0.1 });
+      this.contactObs.observe(contactEl);
+    } else {
+      this.contactVisible = true; // no observer support — behave as before, always on
+    }
     this.startPlaceholders();
     this.watchCountUp(this.statsRef, 'mp');
     this.watchCountUp(this.projStatsRef, 'projMp');
@@ -1390,6 +1425,19 @@ class Component extends DCLogic {
     window.addEventListener('pointermove', this.onMove, { passive: true });
     window.addEventListener('scroll', this.onScroll, { passive: true });
     document.addEventListener('visibilitychange', this.onVis);
+    // The ray-marched shader costs a full CPU core continuously, and
+    // scrolling past the hero is the common case on a page this long —
+    // frame() already skips work while the tab is hidden (this.visible);
+    // this adds the same skip for "hero scrolled out of view while the tab
+    // is still active", measured to be just as expensive as being on screen
+    // since nothing was gating it before. preserveDrawingBuffer:true (above)
+    // means the canvas just holds its last frame while paused, no flicker.
+    if('IntersectionObserver' in window){
+      this.heroObs = new IntersectionObserver((entries) => {
+        this.heroInView = entries.some(e => e.isIntersecting);
+      }, { threshold: 0 });
+      this.heroObs.observe(cv);
+    }
     this.resize(); this.onScroll();
     this.raf = requestAnimationFrame(this.frame);
   }
@@ -1399,7 +1447,17 @@ class Component extends DCLogic {
     cancelAnimationFrame(this.starRaf);
     Object.values(this.countUpRaf || {}).forEach(cancelAnimationFrame);
     Object.values(this.countUpObs || {}).forEach(obs => obs.disconnect());
+    if(this.heroObs) this.heroObs.disconnect();
+    if(this.contactObs) this.contactObs.disconnect();
     this.stopped = true;
+    // Wake up startPlaceholders if it's mid-await on waitVisible() so it
+    // can see this.stopped and return instead of hanging on a promise that
+    // was otherwise never going to resolve.
+    if(this.contactVisResolvers && this.contactVisResolvers.length){
+      const resolvers = this.contactVisResolvers;
+      this.contactVisResolvers = [];
+      resolvers.forEach(res => res());
+    }
     if(this.typeTimer) clearTimeout(this.typeTimer);
     Object.values(this.phT || {}).forEach(clearTimeout);
     Object.values(this.cliTimers || {}).forEach(clearTimeout);
@@ -1488,7 +1546,7 @@ class Component extends DCLogic {
   frame = () => {
     this.raf = requestAnimationFrame(this.frame);
     const gl = this.gl, cv = this.canvasRef.current;
-    if(!gl || !cv || !this.visible) return;
+    if(!gl || !cv || !this.visible || !this.heroInView) return;
     this.resize();
 
     const t = (performance.now() - this.t0) / 1000;

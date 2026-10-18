@@ -1,17 +1,11 @@
 const { neon } = require('@neondatabase/serverless');
-const { Redis } = require('@upstash/redis');
 const { Resend } = require('resend');
+const { checkRateLimit } = require('./_lib/rate-limit');
 
 const RECIPIENT = 'garciaalejandro2552@gmail.com';
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function getClientIp(req) {
-  const fwd = req.headers['x-forwarded-for'];
-  if (typeof fwd === 'string' && fwd.length) return fwd.split(',')[0].trim();
-  return req.socket && req.socket.remoteAddress || 'unknown';
-}
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -45,19 +39,14 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-    const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-    if (redisUrl && redisToken) {
-      const redis = new Redis({ url: redisUrl, token: redisToken });
-      const ip = getClientIp(req);
-      const bucket = Math.floor(Date.now() / (RATE_LIMIT_WINDOW_SECONDS * 1000));
-      const key = `contact:rl:${ip}:${bucket}`;
-      const count = await redis.incr(key);
-      if (count === 1) await redis.expire(key, RATE_LIMIT_WINDOW_SECONDS);
-      if (count > RATE_LIMIT_MAX) {
-        res.status(429).json({ ok: false, error: 'Too many requests. Try again later.' });
-        return;
-      }
+    const allowed = await checkRateLimit(req, {
+      prefix: 'contact:rl',
+      max: RATE_LIMIT_MAX,
+      windowSeconds: RATE_LIMIT_WINDOW_SECONDS,
+    });
+    if (!allowed) {
+      res.status(429).json({ ok: false, error: 'Too many requests. Try again later.' });
+      return;
     }
 
     const sql = neon(process.env.DATABASE_URL);

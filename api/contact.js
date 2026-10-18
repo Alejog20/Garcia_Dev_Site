@@ -68,13 +68,18 @@ module.exports = async function handler(req, res) {
 
     if (process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
+      const { error: sendError } = await resend.emails.send({
         from: 'Garcia Dev Site <contact@garcia-dev.co>',
         to: RECIPIENT,
         replyTo: email.trim(),
         subject: `New enquiry from ${name.trim()}`,
         text: message.trim(),
       });
+      // The lead is already in Postgres by this point — a failed email
+      // notification shouldn't tell the visitor their message was lost.
+      // Resend's SDK returns { error } instead of throwing, so this has
+      // to be checked explicitly or it fails silently.
+      if (sendError) console.error('contact form email error', sendError);
     }
 
     res.status(200).json({ ok: true });

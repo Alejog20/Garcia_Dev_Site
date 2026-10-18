@@ -523,7 +523,8 @@
             <a href="https://github.com/Alejog20">GitHub</a>
           </div>
         </div>
-        <form action="mailto:garciaalejandro2552@gmail.com" method="post" enctype="text/plain" style="display:flex;flex-direction:column;gap:26px;padding:clamp(26px,3vw,38px);background:linear-gradient(155deg, rgba(242,239,234,.055), rgba(26,23,28,.05) 46%, rgba(10,9,11,.05));border:1px solid rgba(242,239,234,.15);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 0 0 1px rgba(242,239,234,.02),0 26px 70px -34px rgba(0,0,0,.9)">
+        <sc-if value="{{ contactShowForm }}">
+        <form ref="{{ contactFormRef }}" onSubmit="{{ onSubmitContact }}" style="display:flex;flex-direction:column;gap:26px;padding:clamp(26px,3vw,38px);background:linear-gradient(155deg, rgba(242,239,234,.055), rgba(26,23,28,.05) 46%, rgba(10,9,11,.05));border:1px solid rgba(242,239,234,.15);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 0 0 1px rgba(242,239,234,.02),0 26px 70px -34px rgba(0,0,0,.9)">
           <label style="display:flex;flex-direction:column;gap:10px">
             <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;transition:color .18s;color:{{ labName }}">Name</span>
             <input type="text" name="name" placeholder="{{ phName }}" onFocus="{{ onFocusName }}" onBlur="{{ onBlurName }}" onInput="{{ onInputName }}" style="background:transparent;border:0;border-bottom:1px solid rgba(242,239,234,.18);padding:10px 0;color:#F2EFEA;font-family:'Space Grotesk',sans-serif;font-size:16px;outline:none" style-focus="border-color:#FF6A1F" />
@@ -536,14 +537,29 @@
             <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;transition:color .18s;color:{{ labMsg }}">What do you need?</span>
             <textarea name="message" rows="4" placeholder="{{ phMsg }}" onFocus="{{ onFocusMsg }}" onBlur="{{ onBlurMsg }}" onInput="{{ onInputMsg }}" style="background:transparent;border:0;border-bottom:1px solid rgba(242,239,234,.18);padding:10px 0;color:#F2EFEA;font-family:'Space Grotesk',sans-serif;font-size:16px;outline:none;resize:vertical" style-focus="border-color:#FF6A1F"></textarea>
           </label>
-          <button type="submit" style="align-self:flex-start;margin-top:6px;padding:15px 30px;border:0;background:#F2EFEA;color:#08070A;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;letter-spacing:.02em;cursor:pointer" style-hover="background:#FF6A1F">Send message</button>
+          <label aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:0;height:0;overflow:hidden">
+            Company
+            <input type="text" name="company" tabindex="-1" autocomplete="off" />
+          </label>
+          <sc-if value="{{ contactShowError }}">
+          <p role="alert" style="margin:0;color:#FF8C4A;font-size:13px;line-height:1.6">{{ contactErrorMsg }} If this keeps happening, email me directly at <a href="mailto:garciaalejandro2552@gmail.com" style="color:#FF9257">garciaalejandro2552@gmail.com</a>.</p>
+          </sc-if>
+          <button type="submit" disabled="{{ contactPending }}" style="align-self:flex-start;margin-top:6px;padding:15px 30px;border:0;background:#F2EFEA;color:#08070A;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;letter-spacing:.02em;cursor:pointer" style-hover="background:#FF6A1F">{{ contactButtonLabel }}</button>
         </form>
+        </sc-if>
+        <sc-if value="{{ contactShowSuccess }}">
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:14px;padding:clamp(26px,3vw,38px);background:linear-gradient(155deg, rgba(242,239,234,.055), rgba(26,23,28,.05) 46%, rgba(10,9,11,.05));border:1px solid rgba(242,239,234,.15);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 0 0 1px rgba(242,239,234,.02),0 26px 70px -34px rgba(0,0,0,.9)">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#FF8C4A">Sent</span>
+          <p style="margin:0;font-size:17px;line-height:1.6;color:#F2EFEA">Got it — I'll reply from garciaalejandro2552@gmail.com within a day or two.</p>
+        </div>
+        </sc-if>
       </div>
     </div>
   </section>
 
   <footer style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:30px clamp(20px,3.2vw,44px);background:transparent;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#6E6862">
     <span>© 2026 Alejandro García</span>
+    <a href="/privacy.html" style="color:#6E6862" style-hover="color:#FF9257">Privacy</a>
   </footer>
   </div>
 </div>
@@ -743,11 +759,12 @@ class Component extends DCLogic {
     this.starRef = React.createRef();
     this.statsRef = React.createRef();
     this.projStatsRef = React.createRef();
+    this.contactFormRef = React.createRef();
     this.cliRefs = {}; this.cliBusy = {};
     this.PROJECTS.forEach(p => {
       if(p.cli) this.cliRefs[p.slug] = p.cli.steps.map(() => ({ promptRef: React.createRef(), outRef: React.createRef() }));
     });
-    this.state = { typed: '', phName: '', phEmail: '', phMsg: '', projOpen: null };
+    this.state = { typed: '', phName: '', phEmail: '', phMsg: '', projOpen: null, contactStatus: 'idle', contactError: '' };
     this.phT = {}; this.focus = {};
     this.mouse = { x: 0, y: 0, tx: 0, ty: 0 };
     this.fall = 0; this.fallT = 0;
@@ -777,7 +794,15 @@ class Component extends DCLogic {
       onFocusMsg: this.holdPh('phMsg'), onBlurMsg: this.resumePh('phMsg'), onInputMsg: this.markPh('phMsg'),
       labName: this.state.actName ? '#FF8C4A' : '#6E6862',
       labEmail: this.state.actEmail ? '#FF8C4A' : '#6E6862',
-      labMsg: this.state.actMsg ? '#FF8C4A' : '#6E6862'
+      labMsg: this.state.actMsg ? '#FF8C4A' : '#6E6862',
+      contactFormRef: this.contactFormRef,
+      onSubmitContact: (e) => this.submitContact(e),
+      contactShowForm: this.state.contactStatus !== 'success',
+      contactShowSuccess: this.state.contactStatus === 'success',
+      contactShowError: this.state.contactStatus === 'error',
+      contactPending: this.state.contactStatus === 'pending',
+      contactButtonLabel: this.state.contactStatus === 'pending' ? 'Sending…' : 'Send message',
+      contactErrorMsg: this.state.contactError || 'Something went wrong. Try again shortly.'
     };
   }
 
@@ -812,6 +837,33 @@ class Component extends DCLogic {
       if(filled) return;
       this.focus[key] = false;
     };
+  }
+
+  async submitContact(e){
+    e.preventDefault();
+    if(this.state.contactStatus === 'pending') return;
+    const form = this.contactFormRef.current;
+    if(!form) return;
+    const data = new FormData(form);
+    const payload = {
+      name: (data.get('name') || '').toString(),
+      email: (data.get('email') || '').toString(),
+      message: (data.get('message') || '').toString(),
+      company: (data.get('company') || '').toString()
+    };
+    this.setState({ contactStatus: 'pending', contactError: '' });
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json().catch(() => ({}));
+      if(!res.ok || !json.ok) throw new Error(json.error || 'Something went wrong.');
+      this.setState({ contactStatus: 'success' });
+    } catch (err) {
+      this.setState({ contactStatus: 'error', contactError: (err && err.message) || 'Something went wrong. Try again shortly.' });
+    }
   }
 
   wait(ms){

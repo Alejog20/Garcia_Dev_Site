@@ -25,6 +25,13 @@ async function mockLoggedOut(page) {
   });
 }
 
+async function mockAuthenticatedEmptyDashboard(page) {
+  await page.route("**/api/blog/posts", (route) => {
+    if (route.request().method() !== "GET") return route.fallback();
+    route.fulfill({ status: 200, json: { ok: true, authenticated: true, posts: [] } });
+  });
+}
+
 test.describe("blog admin", () => {
   test("shows the login form when not authenticated", async ({ page }) => {
     await mockLoggedOut(page);
@@ -142,5 +149,88 @@ test.describe("blog admin", () => {
     await page.locator('[data-action="delete"]').click();
 
     await expect(page.locator(".post-row")).toContainText("No posts yet.");
+  });
+
+  test("bold toolbar button wraps the selected text", async ({ page }) => {
+    await mockAuthenticatedEmptyDashboard(page);
+    await page.goto("/blog-admin.html");
+    await page.locator("#new-post-btn").click();
+
+    const body = page.locator("#field-body");
+    await body.fill("hello world");
+    await body.evaluate((el) => el.setSelectionRange(6, 11)); // selects "world"
+    await page.locator('[data-md="bold"]').click();
+
+    await expect(body).toHaveValue("hello **world**");
+  });
+
+  test("H2 toolbar button prefixes the current line", async ({ page }) => {
+    await mockAuthenticatedEmptyDashboard(page);
+    await page.goto("/blog-admin.html");
+    await page.locator("#new-post-btn").click();
+
+    const body = page.locator("#field-body");
+    await body.fill("My Heading");
+    await body.evaluate((el) => el.setSelectionRange(0, 0));
+    await page.locator('[data-md="h2"]').click();
+
+    await expect(body).toHaveValue("## My Heading");
+  });
+
+  test("inline image upload inserts markdown image syntax at the cursor", async ({ page }) => {
+    await mockAuthenticatedEmptyDashboard(page);
+    await page.route("**/api/blog/upload-image", (route) =>
+      route.fulfill({
+        status: 200,
+        json: { ok: true, url: "https://example.public.blob.vercel-storage.com/test.jpg" },
+      })
+    );
+
+    await page.goto("/blog-admin.html");
+    await page.locator("#new-post-btn").click();
+    await page.locator("#inline-image-input").setInputFiles({
+      name: "test.jpg",
+      mimeType: "image/jpeg",
+      buffer: Buffer.from("fake-image-bytes"),
+    });
+
+    await expect(page.locator("#field-body")).toHaveValue(
+      "![image](https://example.public.blob.vercel-storage.com/test.jpg)"
+    );
+  });
+
+  test("featured image upload shows a preview thumbnail", async ({ page }) => {
+    await mockAuthenticatedEmptyDashboard(page);
+    await page.route("**/api/blog/upload-image", (route) =>
+      route.fulfill({
+        status: 200,
+        json: { ok: true, url: "https://example.public.blob.vercel-storage.com/hero.jpg" },
+      })
+    );
+
+    await page.goto("/blog-admin.html");
+    await page.locator("#new-post-btn").click();
+    await page.locator("#featured-image-input").setInputFiles({
+      name: "hero.jpg",
+      mimeType: "image/jpeg",
+      buffer: Buffer.from("fake-image-bytes"),
+    });
+
+    const preview = page.locator("#featured-image-preview");
+    await expect(preview).toBeVisible();
+    await expect(preview).toHaveAttribute("src", "https://example.public.blob.vercel-storage.com/hero.jpg");
+  });
+
+  test("live preview reflects a mocked render response", async ({ page }) => {
+    await mockAuthenticatedEmptyDashboard(page);
+    await page.route("**/api/blog/preview", (route) =>
+      route.fulfill({ status: 200, json: { ok: true, html: "<p>Rendered preview</p>" } })
+    );
+
+    await page.goto("/blog-admin.html");
+    await page.locator("#new-post-btn").click();
+    await page.locator("#field-body").fill("Some markdown");
+
+    await expect(page.locator("#preview-pane")).toContainText("Rendered preview");
   });
 });

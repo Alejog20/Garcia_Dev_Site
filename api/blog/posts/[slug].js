@@ -1,6 +1,7 @@
 const { neon } = require('@neondatabase/serverless');
 const { isAuthenticated } = require('../../_lib/auth');
 const { validatePost } = require('../../_lib/validate-post');
+const { renderMarkdown } = require('../../_lib/render-markdown');
 
 module.exports = async function handler(req, res) {
   const { slug } = req.query;
@@ -16,7 +17,9 @@ module.exports = async function handler(req, res) {
       res.status(404).json({ ok: false, error: 'Not found' });
       return;
     }
-    res.status(200).json({ ok: true, post });
+    // Pre-rendered so the public /blog popup script can drop it straight
+    // into the DOM instead of shipping a markdown parser to the browser.
+    res.status(200).json({ ok: true, post: { ...post, body_html: renderMarkdown(post.body_markdown) } });
     return;
   }
 
@@ -49,6 +52,7 @@ module.exports = async function handler(req, res) {
           title = coalesce(${body.title?.trim() ?? null}, title),
           excerpt = coalesce(${body.excerpt ?? null}, excerpt),
           body_markdown = coalesce(${body.body_markdown ?? null}, body_markdown),
+          featured_image_url = coalesce(${body.featured_image_url ?? null}, featured_image_url),
           updated_at = now()
         where slug = ${slug}
         returning *

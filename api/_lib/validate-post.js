@@ -20,6 +20,11 @@ function validatePost(body, { partial = false } = {}) {
       errors.push('excerpt must be a string under 500 characters');
     }
   }
+  if (body.featured_image_url !== undefined && body.featured_image_url !== null && body.featured_image_url !== '') {
+    if (typeof body.featured_image_url !== 'string' || body.featured_image_url.length > 2000 || !/^https?:\/\//i.test(body.featured_image_url)) {
+      errors.push('featured_image_url must be an http(s) URL under 2000 characters');
+    }
+  }
   if (!partial || body.body_markdown !== undefined) {
     if (typeof body.body_markdown !== 'string' || body.body_markdown.trim().length < 1 || body.body_markdown.length > 200000) {
       errors.push('body_markdown is required (max 200000 characters)');

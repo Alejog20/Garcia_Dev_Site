@@ -16,8 +16,16 @@
   const saveBtn = document.getElementById('save-btn');
   const cancelBtn = document.getElementById('cancel-btn');
   const editorError = document.getElementById('editor-error');
+  const previewPane = document.getElementById('preview-pane');
+  const mdToolbar = document.getElementById('md-toolbar');
+  const featuredImageBtn = document.getElementById('featured-image-btn');
+  const featuredImageInput = document.getElementById('featured-image-input');
+  const featuredImagePreview = document.getElementById('featured-image-preview');
+  const inlineImageBtn = document.getElementById('inline-image-btn');
+  const inlineImageInput = document.getElementById('inline-image-input');
 
   let editingSlug = null; // null => creating a new post
+  let featuredImageUrl = null;
 
   function showView(view) {
     loginView.hidden = view !== 'login';
@@ -42,6 +50,8 @@
     return div.innerHTML;
   }
 
+  // ---- dashboard ----
+
   function renderPosts(posts) {
     postList.innerHTML = '';
     if (!posts.length) {
@@ -54,10 +64,14 @@
     posts.forEach(post => {
       const li = document.createElement('li');
       li.className = 'post-row';
+      const thumb = post.featured_image_url
+        ? `<img class="thumb" src="${escapeHtml(post.featured_image_url)}" alt="">`
+        : '<div class="thumb"></div>';
       li.innerHTML = `
-        <div>
+        ${thumb}
+        <div class="meta-col">
           <div class="title">${escapeHtml(post.title)} <span class="badge ${post.published ? 'published' : ''}">${post.published ? 'Published' : 'Draft'}</span></div>
-          <div class="meta">/blog/${escapeHtml(post.slug)} · updated ${formatDate(post.updated_at)}</div>
+          <div class="meta">/blog/${escapeHtml(post.slug)} &middot; updated ${formatDate(post.updated_at)}</div>
         </div>
         <div class="row-actions">
           <button class="secondary" data-action="edit">Edit</button>
@@ -90,8 +104,11 @@
     loadDashboard();
   }
 
+  // ---- editor ----
+
   function openEditor(post) {
     editingSlug = post ? post.slug : null;
+    featuredImageUrl = post ? (post.featured_image_url || null) : null;
     editorHeading.textContent = post ? 'Edit post' : 'New post';
     fieldSlug.value = post ? post.slug : '';
     fieldSlug.disabled = Boolean(post);
@@ -99,7 +116,16 @@
     fieldExcerpt.value = post ? (post.excerpt || '') : '';
     fieldBody.value = post ? post.body_markdown : '';
     editorError.hidden = true;
+    if (featuredImageUrl) {
+      featuredImagePreview.src = featuredImageUrl;
+      featuredImagePreview.hidden = false;
+    } else {
+      featuredImagePreview.hidden = true;
+      featuredImagePreview.removeAttribute('src');
+    }
+    renderPreview();
     showView('editor');
+    fieldTitle.focus();
   }
 
   newPostBtn.addEventListener('click', () => openEditor(null));
@@ -112,6 +138,7 @@
       title: fieldTitle.value.trim(),
       excerpt: fieldExcerpt.value.trim(),
       body_markdown: fieldBody.value,
+      featured_image_url: featuredImageUrl,
     };
     try {
       if (editingSlug) {
@@ -134,6 +161,130 @@
       editorError.hidden = false;
     }
   });
+
+  // ---- live preview ----
+
+  let previewTimer = null;
+  function schedulePreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(renderPreview, 400);
+  }
+  async function renderPreview() {
+    if (!fieldBody.value.trim()) { previewPane.innerHTML = ''; return; }
+    try {
+      const json = await api('/api/blog/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body_markdown: fieldBody.value }),
+      });
+      previewPane.innerHTML = json.html;
+    } catch {
+      // leave the previous preview showing rather than clearing it on a transient error
+    }
+  }
+  fieldBody.addEventListener('input', schedulePreview);
+
+  // ---- markdown toolbar ----
+
+  function wrapSelection(before, after) {
+    const ta = fieldBody;
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const selected = ta.value.slice(start, end);
+    ta.setRangeText(before + selected + after, start, end, 'select');
+    ta.setSelectionRange(start + before.length, start + before.length + selected.length);
+    ta.focus();
+    schedulePreview();
+  }
+
+  function prefixLines(prefix) {
+    const ta = fieldBody;
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const value = ta.value;
+    const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+    let lineEnd = value.indexOf('\n', end);
+    if (lineEnd === -1) lineEnd = value.length;
+    const block = value.slice(lineStart, lineEnd);
+    const prefixed = block.split('\n').map(l => prefix + l).join('\n');
+    ta.setRangeText(prefixed, lineStart, lineEnd, 'end');
+    ta.focus();
+    schedulePreview();
+  }
+
+  function insertLink() {
+    const ta = fieldBody;
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const selected = ta.value.slice(start, end) || 'link text';
+    const url = prompt('Link URL:', 'https://');
+    if (!url) return;
+    ta.setRangeText(`[${selected}](${url})`, start, end, 'end');
+    ta.focus();
+    schedulePreview();
+  }
+
+  const MD_ACTIONS = {
+    bold: () => wrapSelection('**', '**'),
+    italic: () => wrapSelection('*', '*'),
+    h2: () => prefixLines('## '),
+    h3: () => prefixLines('### '),
+    quote: () => prefixLines('> '),
+    code: () => wrapSelection('`', '`'),
+    list: () => prefixLines('- '),
+    link: insertLink,
+  };
+
+  mdToolbar.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-md]');
+    if (!btn) return;
+    const action = MD_ACTIONS[btn.dataset.md];
+    if (action) action();
+  });
+
+  // ---- image uploads ----
+
+  async function uploadImage(file) {
+    const fd = new FormData();
+    fd.append('image', file);
+    const res = await fetch('/api/blog/upload-image', { method: 'POST', credentials: 'include', body: fd });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.ok) throw new Error(json.error || 'Upload failed');
+    return json.url;
+  }
+
+  featuredImageBtn.addEventListener('click', () => featuredImageInput.click());
+  featuredImageInput.addEventListener('change', async () => {
+    const file = featuredImageInput.files[0];
+    if (!file) return;
+    try {
+      featuredImageUrl = await uploadImage(file);
+      featuredImagePreview.src = featuredImageUrl;
+      featuredImagePreview.hidden = false;
+    } catch (err) {
+      editorError.textContent = err.message;
+      editorError.hidden = false;
+    }
+    featuredImageInput.value = '';
+  });
+
+  inlineImageBtn.addEventListener('click', () => inlineImageInput.click());
+  inlineImageInput.addEventListener('change', async () => {
+    const file = inlineImageInput.files[0];
+    if (!file) return;
+    try {
+      const url = await uploadImage(file);
+      const ta = fieldBody;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const alt = ta.value.slice(start, end) || 'image';
+      ta.setRangeText(`![${alt}](${url})`, start, end, 'end');
+      ta.focus();
+      schedulePreview();
+    } catch (err) {
+      editorError.textContent = err.message;
+      editorError.hidden = false;
+    }
+    inlineImageInput.value = '';
+  });
+
+  // ---- auth ----
 
   loginBtn.addEventListener('click', async () => {
     loginError.hidden = true;

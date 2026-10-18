@@ -37,8 +37,8 @@ module.exports = async function handler(req, res) {
       // what the request sends — new posts are drafts until explicitly
       // published via /api/blog/posts/[slug]/publish.
       const rows = await sql`
-        insert into posts (slug, title, excerpt, body_markdown, published)
-        values (${body.slug}, ${body.title.trim()}, ${body.excerpt || null}, ${body.body_markdown}, false)
+        insert into posts (slug, title, excerpt, body_markdown, featured_image_url, published)
+        values (${body.slug}, ${body.title.trim()}, ${body.excerpt || null}, ${body.body_markdown}, ${body.featured_image_url || null}, false)
         returning *
       `;
       res.status(201).json({ ok: true, post: rows[0] });

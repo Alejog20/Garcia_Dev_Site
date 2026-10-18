@@ -2,12 +2,17 @@
   "name": "garcia-dev-site",
   "private": true,
   "version": "1.0.0",
-  "description": "Portfolio site for Alejandro García. Zero-build static site; devDependencies are test-only and never ship.",
+  "description": "Portfolio site for Alejandro García. Zero-build static site; the only runtime dependencies are for the /api/contact serverless function, resolved by Vercel at deploy time, not bundled into the site itself.",
   "scripts": {
     "serve": "node scripts/static-server.mjs",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "@upstash/redis": "^1.34.3",
+    "resend": "^4.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0"

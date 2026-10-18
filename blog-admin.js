@@ -141,7 +141,7 @@
       await api('/api/blog/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: tokenInput.value }),
+        body: JSON.stringify({ token: tokenInput.value.trim() }),
       });
       tokenInput.value = '';
       loadDashboard();

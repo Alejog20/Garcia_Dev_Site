@@ -33,11 +33,21 @@ function getPresentedToken(req) {
     return authHeader.slice('Bearer '.length).trim();
   }
   const cookies = parseCookies(req);
-  return cookies[COOKIE_NAME] || null;
+  return cookies[COOKIE_NAME] ? cookies[COOKIE_NAME].trim() : null;
+}
+
+// Trimmed on both sides — a stray trailing newline from pasting the token
+// into `vercel env add`'s prompt, or into the login form, is an invisible
+// but real byte-for-byte mismatch against a plain equality/timing-safe
+// compare. Whitespace isn't part of the secret; losing it shouldn't lock
+// anyone out.
+function getExpectedToken() {
+  const expected = process.env.BLOG_ADMIN_TOKEN;
+  return typeof expected === 'string' ? expected.trim() : '';
 }
 
 function isAuthenticated(req) {
-  const expected = process.env.BLOG_ADMIN_TOKEN;
+  const expected = getExpectedToken();
   if (!expected) return false;
   const presented = getPresentedToken(req);
   if (!presented) return false;
@@ -47,9 +57,11 @@ function isAuthenticated(req) {
 // Used by /api/blog/login, which receives the token in the request body
 // rather than a header or cookie.
 function verifyToken(token) {
-  const expected = process.env.BLOG_ADMIN_TOKEN;
-  if (!expected || typeof token !== 'string' || !token) return false;
-  return timingSafeEqualStrings(token, expected);
+  const expected = getExpectedToken();
+  if (!expected || typeof token !== 'string') return false;
+  const trimmed = token.trim();
+  if (!trimmed) return false;
+  return timingSafeEqualStrings(trimmed, expected);
 }
 
 function setAuthCookie(res, token) {

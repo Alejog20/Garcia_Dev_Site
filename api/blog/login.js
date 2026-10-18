@@ -31,6 +31,6 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  setAuthCookie(res, body.token);
+  setAuthCookie(res, String(body.token).trim());
   res.status(200).json({ ok: true });
 };

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blog admin — Alejandro García</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #050506;
+    color: #F2EFEA;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: clamp(56px, 8vh, 96px) clamp(20px, 3.2vw, 44px) clamp(70px, 9vh, 120px);
+  }
+  a { color: #FF8C4A; }
+  a:hover { color: #FF9257; }
+  .eyebrow {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: #6E6862;
+    margin-bottom: 18px;
+  }
+  h1 {
+    margin: 0 0 34px;
+    font-size: clamp(28px, 3.6vw, 38px);
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: -.03em;
+  }
+  h2 { font-size: 19px; font-weight: 500; margin: 0 0 20px; }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #6E6862;
+  }
+  input, textarea {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(242,239,234,.18);
+    padding: 10px 0;
+    color: #F2EFEA;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    outline: none;
+    resize: vertical;
+  }
+  input:focus, textarea:focus { border-color: #FF6A1F; }
+  textarea#field-body { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; }
+  button {
+    padding: 12px 22px;
+    border: 0;
+    background: #F2EFEA;
+    color: #08070A;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  button:hover { background: #FF8C4A; }
+  button.secondary { background: transparent; color: #A8A29A; border: 1px solid rgba(242,239,234,.18); }
+  button.secondary:hover { background: transparent; color: #F2EFEA; border-color: rgba(242,239,234,.4); }
+  button.danger { background: transparent; color: #FF8C4A; border: 1px solid rgba(255,106,31,.3); }
+  button.danger:hover { background: rgba(255,106,31,.1); color: #FF9257; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 24px 0; }
+  .error { color: #FF8C4A; font-size: 13px; margin-top: 10px; }
+  .post-list { list-style: none; margin: 0; padding: 0; }
+  .post-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(242,239,234,.1);
+    flex-wrap: wrap;
+  }
+  .post-row .title { font-weight: 500; }
+  .post-row .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .08em; color: #6E6862; margin-top: 4px; }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    border: 1px solid rgba(242,239,234,.18);
+    color: #6E6862;
+  }
+  .badge.published { color: #FF8C4A; border-color: rgba(255,106,31,.35); }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row-actions button { padding: 8px 14px; font-size: 12px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <span class="eyebrow">Blog admin</span>
+  <h1>Manage posts</h1>
+
+  <section id="login-view">
+    <label>Admin token
+      <input type="password" id="token-input" autocomplete="current-password">
+    </label>
+    <div class="toolbar"><button id="login-btn">Log in</button></div>
+    <p id="login-error" class="error" hidden></p>
+  </section>
+
+  <section id="dashboard-view" hidden>
+    <div class="toolbar">
+      <button id="new-post-btn">New post</button>
+      <button class="secondary" id="logout-btn">Log out</button>
+    </div>
+    <ul class="post-list" id="post-list"></ul>
+  </section>
+
+  <section id="editor-view" hidden>
+    <h2 id="editor-heading">New post</h2>
+    <label>Slug
+      <input type="text" id="field-slug" placeholder="my-post-title">
+    </label>
+    <label>Title
+      <input type="text" id="field-title">
+    </label>
+    <label>Excerpt
+      <textarea id="field-excerpt" rows="2"></textarea>
+    </label>
+    <label>Body (Markdown)
+      <textarea id="field-body" rows="16"></textarea>
+    </label>
+    <div class="toolbar">
+      <button id="save-btn">Save</button>
+      <button class="secondary" id="cancel-btn">Cancel</button>
+    </div>
+    <p id="editor-error" class="error" hidden></p>
+  </section>
+</main>
+<script src="/blog-admin.js" defer></script>
+</body>
+</html>

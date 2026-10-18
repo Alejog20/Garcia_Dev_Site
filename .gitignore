@@ -9,3 +9,8 @@ playwright/.cache/
 
 .vercel
 .env*
+
+# Local Claude Code / Vercel plugin tooling artifacts, not application code
+.claude/
+.agents/
+skills-lock.json

@@ -191,6 +191,7 @@ ${robots ? `<meta name="robots" content="${escapeHtml(robots)}">` : ''}
 </style>
 </head>
 <body>
+<script src="/star-field.js" defer></script>
 <main>
 ${bodyHtml}
 </main>

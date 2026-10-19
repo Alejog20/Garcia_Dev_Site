@@ -23,9 +23,9 @@
     line-height: 1.6;
   }
   main {
-    max-width: 760px;
+    max-width: 1240px;
     margin: 0 auto;
-    padding: clamp(56px, 8vh, 96px) clamp(20px, 3.2vw, 44px) clamp(70px, 9vh, 120px);
+    padding: clamp(40px, 6vh, 72px) clamp(20px, 3.2vw, 44px) clamp(70px, 9vh, 120px);
   }
   a { color: #FF8C4A; }
   a:hover { color: #FF9257; }
@@ -57,7 +57,7 @@
     text-transform: uppercase;
     color: #6E6862;
   }
-  input, textarea {
+  input[type="text"], input[type="password"], textarea {
     background: transparent;
     border: 0;
     border-bottom: 1px solid rgba(242,239,234,.18);
@@ -67,9 +67,9 @@
     font-size: 15px;
     outline: none;
     resize: vertical;
+    width: 100%;
   }
   input:focus, textarea:focus { border-color: #FF6A1F; }
-  textarea#field-body { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; }
   button {
     padding: 12px 22px;
     border: 0;
@@ -89,32 +89,70 @@
   button.danger:hover { background: rgba(255,106,31,.1); color: #FF9257; }
   .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 24px 0; }
   .error { color: #FF8C4A; font-size: 13px; margin-top: 10px; }
+  [hidden] { display: none !important; }
+
+  /* ---- dashboard post list ---- */
   .post-list { list-style: none; margin: 0; padding: 0; }
   .post-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 18px 0;
+    gap: 18px;
+    padding: 16px 0;
     border-bottom: 1px solid rgba(242,239,234,.1);
-    flex-wrap: wrap;
   }
+  .post-row .thumb {
+    width: 64px; height: 46px; object-fit: cover; border-radius: 2px;
+    flex-shrink: 0; background: rgba(242,239,234,.04);
+  }
+  .post-row .meta-col { flex: 1; min-width: 0; }
   .post-row .title { font-weight: 500; }
   .post-row .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .08em; color: #6E6862; margin-top: 4px; }
   .badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 2px;
-    border: 1px solid rgba(242,239,234,.18);
-    color: #6E6862;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .14em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 2px;
+    border: 1px solid rgba(242,239,234,.18); color: #6E6862;
   }
   .badge.published { color: #FF8C4A; border-color: rgba(255,106,31,.35); }
-  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
   .row-actions button { padding: 8px 14px; font-size: 12px; }
-  [hidden] { display: none !important; }
+
+  /* ---- image upload controls ---- */
+  .image-upload { display: flex; align-items: center; gap: 16px; }
+  .image-upload img {
+    width: 120px; height: 68px; object-fit: cover; border-radius: 2px;
+    border: 1px solid rgba(242,239,234,.12);
+  }
+
+  /* ---- markdown editor toolbar + split preview ---- */
+  .md-toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .md-toolbar button {
+    padding: 7px 12px; font-size: 13px; font-weight: 500;
+    background: transparent; color: #A8A29A; border: 1px solid rgba(242,239,234,.18);
+  }
+  .md-toolbar button:hover { background: transparent; color: #F2EFEA; border-color: rgba(242,239,234,.4); }
+  .editor-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 880px) { .editor-split { grid-template-columns: 1fr; } }
+  #field-body { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; min-height: 420px; }
+  #preview-pane {
+    border: 1px solid rgba(242,239,234,.1); border-radius: 2px;
+    padding: 18px 20px; min-height: 420px; overflow-y: auto;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .14em;
+  }
+  #preview-pane:empty::before {
+    content: "PREVIEW"; color: #6E6862; text-transform: uppercase;
+  }
+  #preview-pane > * { font-family: 'Space Grotesk', sans-serif; letter-spacing: normal; }
+  /* same rendered-markdown rules as the public post pages, so the preview matches reality */
+  #preview-pane h2 { margin: 28px 0 12px; font-size: 19px; font-weight: 500; }
+  #preview-pane h3 { margin: 22px 0 10px; font-size: 16px; font-weight: 500; }
+  #preview-pane p { margin: 0 0 14px; color: #A8A29A; font-size: 15px; }
+  #preview-pane p strong, #preview-pane li strong { color: #F2EFEA; font-weight: 500; }
+  #preview-pane ul, #preview-pane ol { margin: 0 0 14px; padding-left: 20px; color: #A8A29A; }
+  #preview-pane blockquote { margin: 0 0 14px; padding-left: 16px; border-left: 2px solid rgba(255,106,31,.4); color: #A8A29A; font-style: italic; }
+  #preview-pane code { font-family: 'JetBrains Mono', monospace; font-size: .85em; background: rgba(242,239,234,.06); padding: .1em .35em; border-radius: 3px; }
+  #preview-pane pre { margin: 0 0 16px; padding: 14px 16px; background: rgba(242,239,234,.04); border: 1px solid rgba(242,239,234,.1); border-radius: 3px; overflow-x: auto; }
+  #preview-pane pre code { background: none; padding: 0; }
+  #preview-pane img { max-width: 100%; border-radius: 2px; }
 </style>
 </head>
 <body>
@@ -149,9 +187,32 @@
     <label>Excerpt
       <textarea id="field-excerpt" rows="2"></textarea>
     </label>
-    <label>Body (Markdown)
-      <textarea id="field-body" rows="16"></textarea>
+    <label>Featured image
+      <div class="image-upload">
+        <img id="featured-image-preview" hidden alt="">
+        <button type="button" class="secondary" id="featured-image-btn">Choose image</button>
+        <input type="file" id="featured-image-input" accept="image/*" hidden>
+      </div>
     </label>
+
+    <label>Body (Markdown)</label>
+    <div class="md-toolbar" id="md-toolbar">
+      <button type="button" data-md="bold" title="Bold"><b>B</b></button>
+      <button type="button" data-md="italic" title="Italic"><i>I</i></button>
+      <button type="button" data-md="h2" title="Heading">H2</button>
+      <button type="button" data-md="h3" title="Subheading">H3</button>
+      <button type="button" data-md="quote" title="Quote">&ldquo;</button>
+      <button type="button" data-md="code" title="Inline code">&lt;/&gt;</button>
+      <button type="button" data-md="list" title="Bullet list">&bull; List</button>
+      <button type="button" data-md="link" title="Link">Link</button>
+      <button type="button" id="inline-image-btn" title="Insert image">Image</button>
+      <input type="file" id="inline-image-input" accept="image/*" hidden>
+    </div>
+    <div class="editor-split">
+      <textarea id="field-body" rows="20"></textarea>
+      <div id="preview-pane"></div>
+    </div>
+
     <div class="toolbar">
       <button id="save-btn">Save</button>
       <button class="secondary" id="cancel-btn">Cancel</button>

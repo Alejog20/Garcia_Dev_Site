@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
   const { slug } = req.query;
   const sql = neon(process.env.DATABASE_URL);
   const rows = await sql`
-    select slug, title, excerpt, body_markdown, published, published_at
+    select slug, title, excerpt, body_markdown, featured_image_url, published, published_at
     from posts
     where slug = ${slug} and published = true
     limit 1
@@ -39,11 +39,18 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const heroImage = post.featured_image_url
+    ? `<img class="hero-image" src="${escapeHtml(post.featured_image_url)}" alt="">`
+    : '';
+
   const bodyHtml = `
     <a class="back" style="margin-top:0;margin-bottom:34px" href="/blog">&larr; Writing</a>
-    <h1>${escapeHtml(post.title)}</h1>
-    <div class="post-date">${formatDate(post.published_at)}</div>
-    <div class="post-body">${renderMarkdown(post.body_markdown)}</div>
+    <article class="post-card">
+      ${heroImage}
+      <span class="post-date">${formatDate(post.published_at)}</span>
+      <h1>${escapeHtml(post.title)}</h1>
+      <div class="post-body">${renderMarkdown(post.body_markdown)}</div>
+    </article>
   `;
 
   const canonical = `https://www.garcia-dev.co/blog/${post.slug}`;

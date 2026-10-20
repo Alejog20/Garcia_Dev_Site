@@ -18,17 +18,30 @@
     return div.innerHTML;
   }
 
+  // Same rule as the grid panels: a real photo if the post has one,
+  // otherwise the post's own generative signal — so an article opened from
+  // a signal panel shows that same signal as its hero, not a blank gap.
+  function buildHero(post) {
+    if (post.featured_image_url) {
+      return `<div class="hero"><img src="${escapeHtml(post.featured_image_url)}" alt=""></div>`;
+    }
+    return `<div class="hero"><canvas data-sig="${escapeHtml(post.signal || 'wave')}" data-seed="${escapeHtml(post.slug)}"></canvas></div>`;
+  }
+
   function buildCard(post) {
-    const hero = post.featured_image_url
-      ? `<img class="hero-image" src="${escapeHtml(post.featured_image_url)}" alt="">`
-      : '';
     return `
       <button type="button" class="popup-close" aria-label="Close">&times;</button>
-      ${hero}
-      <span class="post-date">${formatDate(post.published_at)}</span>
+      ${buildHero(post)}
+      <span class="post-date mono">${formatDate(post.published_at)}</span>
+      ${post.category ? `<span class="cat">${escapeHtml(post.category)}</span>` : ''}
       <h1>${escapeHtml(post.title)}</h1>
       <div class="post-body">${post.body_html}</div>
     `;
+  }
+
+  function initHeroSignal(root) {
+    const canvas = root.querySelector('.hero canvas[data-sig]');
+    if (canvas && window.BlogSignals) window.BlogSignals.init(canvas, canvas.dataset.sig, canvas.dataset.seed);
   }
 
   function closeOverlay(push) {
@@ -52,6 +65,7 @@
 
     overlay.querySelector('.popup-backdrop').addEventListener('click', () => closeOverlay(true));
     overlay.querySelector('.popup-close').addEventListener('click', () => closeOverlay(true));
+    initHeroSignal(overlay);
 
     if (push) history.pushState({ slug: post.slug }, '', `/blog/${post.slug}`);
   }
@@ -61,6 +75,14 @@
       const res = await fetch(`/api/blog/posts/${encodeURIComponent(slug)}`);
       const json = await res.json();
       if (!res.ok || !json.ok) throw new Error('not found');
+      // Mirrors api/_lib/signal-for-slug.js exactly — the post JSON doesn't
+      // carry its signal, so this derives the same deterministic choice
+      // from the slug, keeping the popup's hero in sync with the grid
+      // panel it was opened from. Keep both in sync if this changes.
+      let hash = 0;
+      for (let i = 0; i < json.post.slug.length; i++) hash = (hash * 31 + json.post.slug.charCodeAt(i)) | 0;
+      const types = ['wave', 'scan', 'swarm', 'matrix'];
+      json.post.signal = types[Math.abs(hash) % types.length];
       openOverlay(json.post, push);
     } catch {
       // Fall back to a real navigation rather than fail silently — the
@@ -89,5 +111,12 @@
     } else {
       closeOverlay(false);
     }
+  });
+
+  // Wire up the grid's own signal canvases (the ones rendered server-side
+  // for posts with no featured image) — separate from the popup's hero,
+  // which builds and initializes its own canvas on demand.
+  document.querySelectorAll('.panel .signal canvas[data-sig]').forEach(canvas => {
+    if (window.BlogSignals) window.BlogSignals.init(canvas, canvas.dataset.sig, canvas.dataset.seed);
   });
 })();

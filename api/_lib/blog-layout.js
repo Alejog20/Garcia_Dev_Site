@@ -8,15 +8,15 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// Shared document shell for every public blog page — same color tokens and
-// type system as the rest of garcia-dev.co, extended with an editorial grid
-// for the index and a reusable `.post-card` block for articles. `.post-card`
-// is deliberately styled to work unmodified in two different places: sitting
-// plainly in <main> for a direct page load (so direct links and crawlers get
-// a real article page), and as the visible content of an overlay that
-// blog-public.js builds client-side on top of a blurred /blog index — same
-// markup, same classes, no duplicate styling to keep in sync beyond this
-// one file.
+// Shared document shell for every public blog page — "Control Room": an
+// asymmetric panel grid on /blog, each entry carrying its own generative
+// signal (blog-signals.js) instead of stock photography, with the same
+// signal echoed in the article you land on when it has no real photo of
+// its own. `.post-card` is styled to work unmodified in two places:
+// sitting plainly in <main> for a direct page load (so direct links and
+// crawlers get a real article page), and as the visible content of an
+// overlay blog-public.js builds client-side on top of a blurred /blog —
+// same markup, same classes, one definition to keep in sync.
 function renderShell({ title, description, canonical, bodyHtml, robots, mainMaxWidth }) {
   const maxWidth = mainMaxWidth || '680px';
   return `<!DOCTYPE html>
@@ -52,12 +52,12 @@ ${robots ? `<meta name="robots" content="${escapeHtml(robots)}">` : ''}
     color: #F2EFEA;
     font-family: 'Space Grotesk', sans-serif;
     font-size: 16px;
-    line-height: 1.7;
+    line-height: 1.6;
   }
   main {
     max-width: ${maxWidth};
     margin: 0 auto;
-    padding: clamp(56px, 8vh, 96px) clamp(20px, 3.2vw, 44px) clamp(70px, 9vh, 120px);
+    padding: clamp(40px, 6vh, 72px) clamp(20px, 3.2vw, 44px) clamp(70px, 9vh, 120px);
   }
   a { color: #FF8C4A; text-decoration: none; }
   a:hover { color: #FF9257; }
@@ -70,20 +70,33 @@ ${robots ? `<meta name="robots" content="${escapeHtml(robots)}">` : ''}
     color: #6E6862;
     margin-bottom: 18px;
   }
+  .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
   h1 {
-    margin: 0 0 18px;
-    font-size: clamp(30px, 4vw, 44px);
-    line-height: 1.08;
+    margin: 0 0 14px;
+    font-size: clamp(30px, 4vw, 46px);
+    line-height: 1.04;
     font-weight: 500;
-    letter-spacing: -.03em;
+    letter-spacing: -.035em;
   }
   .post-date {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    letter-spacing: .1em;
+    font-size: 11px;
+    letter-spacing: .14em;
     text-transform: uppercase;
     color: #6E6862;
   }
+  .back {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #6E6862;
+    border-bottom: 1px solid rgba(255, 140, 74, 0);
+    padding-bottom: 2px;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .back:hover { color: #FF9257; border-color: rgba(255, 140, 74, .4); }
 
   /* ---- article body (rendered markdown) ---- */
   .post-body { margin-top: 28px; }
@@ -112,49 +125,65 @@ ${robots ? `<meta name="robots" content="${escapeHtml(robots)}">` : ''}
   .post-body img { max-width: 100%; height: auto; border-radius: 2px; }
   .post-body hr { border: 0; border-top: 1px solid rgba(242, 239, 234, .1); margin: 40px 0; }
 
-  /* ---- post card: reused for a direct page load AND the popup overlay ---- */
+  /* ---- post card / article hero: shared by a direct page load and the
+         popup overlay built by blog-public.js ---- */
   .post-card { max-width: 720px; margin: 0 auto; }
-  .post-card .hero-image {
-    width: 100%; aspect-ratio: 16/9; object-fit: cover;
-    border-radius: 2px; margin-bottom: 30px; display: block;
+  .post-card .hero {
+    position: relative;
+    width: 100%; aspect-ratio: 16/7;
+    border-radius: 2px; margin-bottom: 30px; overflow: hidden;
+    background: #0A0911;
   }
-  .post-card h1 { margin-bottom: 14px; }
+  .post-card .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .post-card .hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .post-card .cat {
+    display: inline-block; margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .18em;
+    text-transform: uppercase; color: #FF8C4A;
+  }
+  .post-card h1 { margin-bottom: 10px; }
 
-  /* ---- /blog index: lead story + grid ---- */
-  .lead-post { padding-bottom: 40px; margin-bottom: 40px; border-bottom: 1px solid rgba(242, 239, 234, .1); }
-  .lead-post .hero-image {
-    width: 100%; aspect-ratio: 21/9; object-fit: cover;
-    border-radius: 2px; margin-bottom: 24px; display: block;
-  }
-  .lead-post h2 { margin: 10px 0 12px; font-size: clamp(26px, 3.4vw, 38px); font-weight: 500; letter-spacing: -.02em; line-height: 1.12; }
-  .lead-post p { margin: 0; color: #A8A29A; font-size: 17px; max-width: 64ch; }
-  .index-grid {
+  /* ---- /blog: the Control Room panel grid ---- */
+  .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 36px 28px;
-    list-style: none; margin: 0; padding: 0;
+    grid-template-columns: repeat(12, 1fr);
+    border-top: 1px solid rgba(242,239,234,.12);
+    border-left: 1px solid rgba(242,239,234,.12);
   }
-  .index-item { border-top: 1px solid rgba(242, 239, 234, .1); padding-top: 20px; }
-  .index-item .thumb {
-    width: 100%; aspect-ratio: 16/10; object-fit: cover;
-    border-radius: 2px; margin-bottom: 16px; display: block;
+  .panel {
+    position: relative;
+    border-right: 1px solid rgba(242,239,234,.12);
+    border-bottom: 1px solid rgba(242,239,234,.12);
+    padding: clamp(20px, 2.2vw, 30px);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    min-height: 210px;
+    overflow: hidden;
+    transition: background-color .25s ease;
   }
-  .index-item h3 { margin: 0 0 8px; font-size: 19px; font-weight: 500; letter-spacing: -.01em; line-height: 1.25; }
-  .index-item .post-date { display: block; margin-bottom: 10px; }
-  .index-item p { margin: 0; color: #A8A29A; font-size: 15px; }
-  .index-item a { color: #F2EFEA; }
-  .index-item a:hover { color: #FF9257; }
-  .empty-state { color: #6E6862; }
+  .panel:hover { background: rgba(255,106,31,.035); }
+  .panel .signal { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .panel .signal img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .panel .inner { position: relative; z-index: 1; }
+  .panel .cat {
+    display: block; margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .16em;
+    text-transform: uppercase; color: #FF8C4A;
+  }
+  .panel h2, .panel h3 { margin: 0 0 10px; font-weight: 500; letter-spacing: -.02em; line-height: 1.18; color: #F2EFEA; }
+  .panel p { margin: 0; color: #A8A29A; font-size: 14px; max-width: 46ch; }
+  .panel .date {
+    position: absolute; top: clamp(20px, 2.2vw, 30px); right: clamp(20px, 2.2vw, 30px);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .12em;
+    text-transform: uppercase; color: #6E6862; z-index: 1;
+  }
+  .panel.featured h2 { font-size: clamp(25px, 2.7vw, 35px); max-width: 15ch; }
+  .panel.featured p { font-size: 16px; max-width: 48ch; }
+  .panel h3 { font-size: 19px; }
+  .empty-state { color: #6E6862; padding: 48px 0; }
 
-  .back {
-    display: inline-block;
-    margin-top: 48px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    border-bottom: 1px solid rgba(255, 140, 74, .4);
-    padding-bottom: 2px;
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+    .panel { grid-column: 1 / -1 !important; grid-row: auto !important; min-height: 220px; }
   }
 
   /* ---- popup overlay (built by blog-public.js, styled here so both
@@ -179,19 +208,24 @@ ${robots ? `<meta name="robots" content="${escapeHtml(robots)}">` : ''}
     width: 100%;
   }
   .popup-close {
-    position: absolute; top: 14px; right: 14px;
+    position: absolute; top: 14px; right: 14px; z-index: 2;
     width: 34px; height: 34px;
     display: flex; align-items: center; justify-content: center;
-    background: transparent; border: 1px solid rgba(242, 239, 234, .18);
+    background: #050506; border: 1px solid rgba(242, 239, 234, .18);
     border-radius: 2px; color: #A8A29A; cursor: pointer;
     font-family: 'Space Grotesk', sans-serif; font-size: 18px; line-height: 1;
   }
   .popup-close:hover { color: #F2EFEA; border-color: rgba(242, 239, 234, .4); }
   body.popup-open { overflow: hidden; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel .signal canvas, .post-card .hero canvas { animation: none !important; }
+  }
 </style>
 </head>
 <body>
 <script src="/star-field.js" defer></script>
+<script src="/blog-signals.js" defer></script>
 <main>
 ${bodyHtml}
 </main>

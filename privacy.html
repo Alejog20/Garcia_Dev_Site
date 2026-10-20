@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy notice — Alejandro García</title>
-<meta name="description" content="What the contact form on garcia-dev.co collects, why, who processes it, and how to request deletion.">
+<meta name="description" content="What garcia-dev.co collects through its contact form and basic site analytics, why, who processes it, and how to request deletion.">
 <link rel="canonical" href="https://www.garcia-dev.co/privacy.html">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32.png">
@@ -75,50 +75,71 @@
 <body>
 <main>
   <span class="eyebrow">Privacy notice</span>
-  <h1>What happens to what you send through the contact form</h1>
+  <h1>What this site collects, and why</h1>
 
-  <p>This page covers the contact form on garcia-dev.co only, and serves as the
-  privacy notice required under Colombia's Ley 1581 de 2012 (Habeas Data) for
-  anyone submitting data through it. Nothing else on the site collects personal
-  data — no analytics, no cookies, no tracking of any kind.</p>
+  <p>This page covers two things: the contact form, and the basic visit
+  statistics the site now keeps. It also serves as the privacy notice
+  required under Colombia's Ley 1581 de 2012, known as Habeas Data, for
+  anyone submitting data through the form.</p>
 
   <h2>Who is collecting it</h2>
-  <p>Alejandro García, the individual operating this site. You can reach me at
-  <a href="mailto:garciaalejandro2552@gmail.com">garciaalejandro2552@gmail.com</a>
+  <p>Alejandro García, the individual operating this site. You can reach me
+  at <a href="mailto:garcia.dev.co@gmail.com">garcia.dev.co@gmail.com</a>
   for anything related to this notice.</p>
 
-  <h2>What's collected</h2>
-  <p>Whatever you type into the form: <strong>name</strong>, <strong>email
-  address</strong> and <strong>message</strong>. Nothing else — no IP address is
-  stored, though it's briefly checked in memory to rate-limit spam.</p>
+  <h2>Visiting the site</h2>
+  <p>The site uses Vercel Web Analytics to see which pages get read and
+  where visitors are coming from. It does not use cookies and does not
+  assign you a persistent identifier. Each visitor is counted using a
+  value that is recalculated daily from your IP address and browser,
+  then discarded, so nobody, including me, can trace a page view back to
+  a specific person over time or across visits. What I can see is
+  aggregate counts: how many people viewed a page, which country they
+  were in, what kind of device they used, and which site sent them here.
+  I use this to understand which parts of the site are actually useful
+  and to fix the ones that are not. None of it is sold, shared with
+  advertisers, or handed to a data broker.</p>
+
+  <h2>What the contact form collects</h2>
+  <p>Whatever you type into it: <strong>name</strong>, <strong>email
+  address</strong>, and <strong>message</strong>. Nothing else. No IP
+  address is stored from the form itself, though it is briefly checked in
+  memory to rate limit spam before being discarded.</p>
 
   <h2>Why, and on what basis</h2>
-  <p>You submit the form because you want a reply, and that data is used only to
-  read and respond to your enquiry — nothing is sold, shared with advertisers, or
-  used for any purpose beyond that. Submitting the form is treated as the express,
-  informed consent Habeas Data requires for this specific, narrow purpose.</p>
+  <p>You submit the form because you want a reply, and that data is used
+  only to read and respond to your enquiry. Nothing is sold, shared with
+  advertisers, or used for any purpose beyond that. Submitting the form is
+  treated as the express, informed consent Habeas Data requires for this
+  specific, narrow purpose.</p>
 
   <h2>Who processes it</h2>
   <p><strong>Neon</strong> stores the submission in a Postgres database.
-  <strong>Resend</strong> delivers a copy to my inbox by email. Both are
-  sub-processors acting only on my instruction — neither uses your data for
+  <strong>Resend</strong> delivers a copy to my inbox by email.
+  <strong>Vercel</strong> processes the visit statistics described above.
+  All three act only on my instruction and do not use your data for
   anything else.</p>
 
   <h2>How long it's kept</h2>
-  <p>Deleted after 12 months if the enquiry hasn't led to ongoing work, or
-  sooner on request.</p>
+  <p>Contact form submissions are deleted after 12 months if the enquiry
+  has not led to ongoing work, or sooner on request. Visit statistics are
+  aggregate from the moment they are collected and are not tied to any
+  individual, so there is nothing to delete on a per person basis.</p>
 
   <h2>Your rights</h2>
-  <p>You can ask to see what's on file for you, have it corrected, or have it
-  deleted, at any time. Email
-  <a href="mailto:garciaalejandro2552@gmail.com">garciaalejandro2552@gmail.com</a>
-  and I'll action it within a few days. If you're in Colombia and believe a
-  request wasn't handled properly, you can also file a complaint with the
-  Superintendencia de Industria y Comercio (SIC).</p>
+  <p>You can ask to see what's on file for you, have it corrected, or have
+  it deleted, at any time. Email
+  <a href="mailto:garcia.dev.co@gmail.com">garcia.dev.co@gmail.com</a>
+  and I will action it within a few days. If you are in Colombia and
+  believe a request was not handled properly, you can also file a
+  complaint with the Superintendencia de Industria y Comercio, known as
+  the SIC.</p>
 
   <hr>
 
   <a class="back" href="/#contacto">← Back to garcia-dev.co</a>
 </main>
+<script src="/analytics-init.js"></script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

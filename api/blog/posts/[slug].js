@@ -53,6 +53,7 @@ module.exports = async function handler(req, res) {
           excerpt = coalesce(${body.excerpt ?? null}, excerpt),
           body_markdown = coalesce(${body.body_markdown ?? null}, body_markdown),
           featured_image_url = coalesce(${body.featured_image_url ?? null}, featured_image_url),
+          category = coalesce(${body.category ?? null}, category),
           updated_at = now()
         where slug = ${slug}
         returning *

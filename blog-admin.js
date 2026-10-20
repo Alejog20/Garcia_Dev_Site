@@ -12,6 +12,7 @@
   const fieldSlug = document.getElementById('field-slug');
   const fieldTitle = document.getElementById('field-title');
   const fieldExcerpt = document.getElementById('field-excerpt');
+  const fieldCategory = document.getElementById('field-category');
   const fieldBody = document.getElementById('field-body');
   const saveBtn = document.getElementById('save-btn');
   const cancelBtn = document.getElementById('cancel-btn');
@@ -114,6 +115,7 @@
     fieldSlug.disabled = Boolean(post);
     fieldTitle.value = post ? post.title : '';
     fieldExcerpt.value = post ? (post.excerpt || '') : '';
+    fieldCategory.value = post ? (post.category || '') : '';
     fieldBody.value = post ? post.body_markdown : '';
     editorError.hidden = true;
     if (featuredImageUrl) {
@@ -137,6 +139,7 @@
       slug: fieldSlug.value.trim(),
       title: fieldTitle.value.trim(),
       excerpt: fieldExcerpt.value.trim(),
+      category: fieldCategory.value.trim(),
       body_markdown: fieldBody.value,
       featured_image_url: featuredImageUrl,
     };

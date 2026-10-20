@@ -25,6 +25,11 @@ function validatePost(body, { partial = false } = {}) {
       errors.push('featured_image_url must be an http(s) URL under 2000 characters');
     }
   }
+  if (body.category !== undefined && body.category !== null && body.category !== '') {
+    if (typeof body.category !== 'string' || body.category.length > 40) {
+      errors.push('category must be a string under 40 characters');
+    }
+  }
   if (!partial || body.body_markdown !== undefined) {
     if (typeof body.body_markdown !== 'string' || body.body_markdown.trim().length < 1 || body.body_markdown.length > 200000) {
       errors.push('body_markdown is required (max 200000 characters)');

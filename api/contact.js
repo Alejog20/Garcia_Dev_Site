@@ -2,7 +2,7 @@ const { neon } = require('@neondatabase/serverless');
 const { Resend } = require('resend');
 const { checkRateLimit } = require('./_lib/rate-limit');
 
-const RECIPIENT = 'garciaalejandro2552@gmail.com';
+const RECIPIENT = 'garcia.dev.co@gmail.com';
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

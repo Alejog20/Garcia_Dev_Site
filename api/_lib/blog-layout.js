@@ -229,6 +229,8 @@ ${robots ? `<meta name="robots" content="${escapeHtml(robots)}">` : ''}
 <main>
 ${bodyHtml}
 </main>
+<script src="/analytics-init.js"></script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
 `;

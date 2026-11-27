@@ -46,6 +46,18 @@ const MIME_TYPES = {
 
 const server = createServer(async (req, res) => {
   const urlPath = decodeURIComponent(req.url.split("?")[0]);
+
+  // /_vercel/* is a platform namespace (Web Analytics, Speed Insights) that
+  // only exists on real Vercel infrastructure. Stub it here rather than let
+  // it 404 — that 404 is real production behavior being simulated away, not
+  // a bug, and page-load.spec.js asserts a clean console.
+  if (urlPath.startsWith("/_vercel/")) {
+    res.setHeader("Content-Type", "text/javascript; charset=utf-8");
+    res.writeHead(200);
+    res.end("// stubbed for local testing — see scripts/static-server.mjs");
+    return;
+  }
+
   let relPath = urlPath === "/" ? "/index.html" : urlPath;
   let filePath = normalize(join(ROOT, relPath));
 
